@@ -1,0 +1,138 @@
+# load fortran symbol table
+useDynLib(xts)
+
+# imports
+#importFrom(stats, lag)
+
+# debugging
+export(firstof,
+       lastof)
+
+export(timeBased,
+       timeBasedRange,
+       timeBasedSeq)
+
+# user visible core xts functions
+export(xts)
+export(as.xts)
+export(is.xts)
+export(xcoredata)
+export('xcoredata<-')
+export(xtsible)
+export(use.xts, try.xts)
+export(Reclass, use.reclass)
+export(reclass)
+export(endpoints)
+export(CLASS)
+export('CLASS<-')
+export(indexClass)
+export(convertIndex)
+export('indexClass<-')
+export(nseconds,
+       nminutes,
+       nhours,
+       ndays,
+       nweeks,
+       nmonths,
+       nquarters,
+       nyears)
+export(to.period,
+       to.minutes,
+       to.minutes3,
+       to.minutes5,
+       to.minutes10,
+       to.minutes15,
+       to.minutes30,
+       to.hourly,
+       to.daily,
+       to.weekly,
+       to.monthly,
+       to.quarterly,
+       to.yearly)
+export(xtsAttributes)
+export('xtsAttributes<-')
+export(periodicity)
+export(period.apply,
+       period.max,
+       period.min,
+       period.sum,
+       period.prod)
+export(first,
+       last)
+export(apply.daily,
+       apply.weekly,
+       apply.monthly,
+       apply.quarterly,
+       apply.yearly)
+#export(rbind.xts,
+#       cbind.xts,
+#       c.xts)
+export(axTicksByTime)
+S3method(plot,xts)
+
+export(Lag.xts, Next.xts) #, Diff.xts)
+
+#S3method(lag,xts)
+#S3method(diff,xts)
+S3method(first,default)
+S3method(last,default)
+S3method(first,zoo)
+S3method(last,zoo)
+S3method(print,periodicity)
+
+# xts methods
+importFrom(zoo,coredata)
+importFrom(zoo,'index<-')
+importFrom(zoo,'time<-')
+importFrom(stats,na.omit)
+S3method(coredata,xts)
+S3method(xcoredata,default)
+S3method('xcoredata<-',default)
+S3method(as.xts,xts)
+S3method('[',xts)
+S3method(str,xts)
+S3method(na.omit,xts)
+S3method(print,xts)
+S3method(print,CLASS)
+S3method('CLASS<-',xts)
+S3method('indexClass<-',xts)
+S3method('index<-',xts)
+S3method('time<-',xts)
+S3method('xtsAttributes<-',xts)
+S3method(rbind,xts)
+S3method(cbind,xts)
+S3method(c,xts)
+S3method(Ops,xts)
+
+# ts specific methods
+S3method(as.xts,ts)
+
+# zoo specific methods
+importFrom(zoo,as.zoo)
+S3method(as.xts,zoo)
+S3method(as.zoo,xts)
+
+# data.frame specific methods
+S3method(as.xts,data.frame)
+
+# matrix specific methods
+S3method(as.xts,matrix)
+
+# timeSeries (package:fSeries) specific methods
+#export(xts.as.timeSeries)
+S3method(as.xts,timeSeries)
+
+# its (package:its) specific methods
+#export(xts.as.its)
+S3method(as.xts,its)
+
+# irts (package:tseries) specific methods
+S3method(as.xts,irts)
+
+# Date specific methods
+S3method(as.xts,Date)
+
+## currently unexported functions that _may_ be exported at some point
+
+#export(startof,endof,firstof,lastof)
+

@@ -1,0 +1,44 @@
+useDynLib(xtime)
+export(
+        as.xtime,
+        is.xtime,
+        un.xtime,
+
+        Sys.xtime,
+
+        tclass,
+        'tclass<-',
+        tzone,
+        'tzone<-',
+
+        MATCH.xtime,
+        ORDER.xtime
+)
+
+S3method(as.xtime,  Date)
+S3method(as.xtime,  POSIXt)
+S3method(as.xtime,  dates)
+S3method(as.xtime,  xtime)
+
+S3method(as.Date,   xtime)
+S3method(as.POSIXct,xtime)
+S3method(as.POSIXlt,xtime)
+
+S3method("[",       xtime)
+
+S3method(tclass,     xtime)
+S3method(tclass,     xts)
+S3method("tclass<-", xtime)
+S3method("tclass<-", xts)
+
+S3method(tzone,     xtime)
+S3method(tzone,     xts)
+S3method("tzone<-", xtime)
+S3method("tzone<-", xts)
+
+S3method(Ops,       xtime)
+S3method(print,     xtime)
+S3method(format,    xtime)
+S3method(as.character, xtime)
+
+S3method(endpoints, default)

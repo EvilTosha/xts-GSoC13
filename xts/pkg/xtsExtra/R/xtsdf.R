@@ -18,12 +18,12 @@
 ### A first attempt at multi-data-type-xts objects
 ### For now implemented entirely in R, move to C over time
 
-### Implementation model: 
+### Implementation model:
 ###   1) List of xts objects, each comprising a single column and a single data type
 ###   2) Pseudo-inherits to data.frame with a helpful downgrade ?
 ###   3) Need to handle ... for both xts() and data.frame() -- right now, deferring to data.frame() mostly
 
-xtsdf <- function(..., order.by = index(x), frequency = NULL, unique = TRUE, tzone = Sys.getenv("TZ"), 
+xtsdf <- function(..., order.by = index(x), frequency = NULL, unique = TRUE, tzone = Sys.getenv("TZ"),
                   stringsAsFactors = default.stringsAsFactors(), check.names = TRUE) {
   # xtsdf constructor function
   # uses xts() and data.frame() code instead of rewriting all the name handling
@@ -42,21 +42,21 @@ as.xtsdf.xts <- function(x, ...){
   ans
 }
 
-as.xtsdf.data.frame <- function(x, order.by, ..., frequency = NULL, unique = TRUE, tzone = Sys.getenv("TZ")){
-  # Next easiest case -- 
+as.xtsdf.data.frame <- function(x, order.by = "rownames", ..., frequency = NULL, unique = TRUE, tzone = Sys.getenv("TZ")){
+  # Next easiest case --
   #   Take data frame and order.by argument and construct xts objects directly
   #   Also allow order.by = "rownames" to use x's rownames
-  
+
   if(!is.timeBased(order.by)) {
     if(order.by == "rownames") {
       order.by <- rownames(x)
     }
     order.by <- as.POSIXct(order.by, ...)
   }
-  
+
   ans <- lapply(as.list(x), function(x) xts(x, order.by = order.by, frequency = frequency, unique = unique, tzone = tzone))
   class(ans) <- "xtsdf"
-  
+
   ans
 }
 
@@ -64,7 +64,7 @@ as.xtsdf.matrix <- function(x, ...) as.xtsdf(as.data.frame(x), ...)
 
 as.data.frame.xtsdf <- function(x, row.names = NULL, optional = FALSE, ...){
   row.names <- if(is.null(row.names)) index(x) else row.names
-  
+
   do.call("data.frame", c(as.list(x), list(row.names = row.names, check.names = optional, ...)))
 }
 

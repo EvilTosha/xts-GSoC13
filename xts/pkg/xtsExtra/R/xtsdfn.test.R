@@ -8,9 +8,9 @@ char.matrix <- matrix(rep("string", 40), ncol = 4)
 colnames(char.matrix) <- c("char1", "char2", "char3", "char4")
 char.xts <- as.xts(char.matrix, Sys.Date() + 1:10)
 
-index <- rep(c(TRUE, FALSE), 4)
+column.classes <- rep(c("character", "double"), 4)
 
-xdfn <- as.xtsdfn(num.xts, char.xts, index)
+xdfn <- xtsdfn(num.xts, char.xts, column.classes = column.classes)
 print(xdfn)
 
 print(xdfn[1:2, 3:5])
@@ -22,9 +22,9 @@ numrow <- 1e3
 numcol <- 1000
 num.matrix <- matrix(rnorm(numrow * numcol), nrow = numrow)
 char.matrix <- matrix(as.character(rnorm(numrow * numcol)), nrow = numrow)
-index <- c(rep(TRUE, numcol), rep(FALSE, numcol))
-xdfn <- as.xtsdfn(as.xts(num.matrix, Sys.Date() + 1:numrow),
-                  as.xts(char.matrix, Sys.Date() + 1:numrow), index)
+column.classes <- c(rep("character", numcol), rep("double", numcol))
+xdfn <- xtsdfn(as.xts(num.matrix, Sys.Date() + 1:numrow),
+               as.xts(char.matrix, Sys.Date() + 1:numrow), column.classes = column.classes)
 
 d <- cbind(data.frame(num.matrix), data.frame(char.matrix))
 rownames(d) <- Sys.Date() + 1:numrow

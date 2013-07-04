@@ -66,9 +66,11 @@ print.xtsdfn <- function(x, ...) {
 }
 
 `[.xtsdfn` <- function(x, i, j, drop = FALSE, which.i = FALSE, ...) {
-  j.num <- intersect(which(x$index), j)
-  j.char <- intersect(which(x$index == FALSE), j)
-  ind <- x$index[j]
-  index.aux <- get.aux.index(x$index)
-  as.xtsdfn(x$numeric[i, index.aux[j.num]], x$character[i, index.aux[j.char]], ind)
+  ## some magic with indices
+  index.aux <- get.aux.index(x)
+  class.xts <- list()
+  for (smode in x$smodes)
+    class.xts[[smode]] <- x[[smode]][i, index.aux[intersect(which(x$column.classes == smode), j)]]
+
+  do.call(xtsdfn, append(class.xts, list(index = x$index, column.classes = x$column.classes[j])))
 }

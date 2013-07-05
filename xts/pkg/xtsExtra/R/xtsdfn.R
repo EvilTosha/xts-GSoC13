@@ -30,8 +30,7 @@ xtsdfn <- function(..., column.classes = NULL, index = NULL){
 
 index.xtsdfn <- function(x) x$index
 
-## doesn't work for some reason
-ncol.xtsdfn <- function(x) length(x$column.classes)
+dim.xtsdfn <- function(x) c(length(index(x)), length(x$column.classes))
 
 ## aux index maps each column index in xtsdfn object to indices in numeric and character parts
 ## aux index is only useful in conjuction with original index

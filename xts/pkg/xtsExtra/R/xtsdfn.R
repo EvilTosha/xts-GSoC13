@@ -10,7 +10,7 @@ xtsdfn <- function(..., column.classes = NULL, index = NULL){
 
   x <- list()
   x$index <- index
-  x$smodes <- smodes
+  x$smodes <- unique(smodes)
 
   recycle.columns <- FALSE
   if (is.null(column.classes))
@@ -20,6 +20,28 @@ xtsdfn <- function(..., column.classes = NULL, index = NULL){
     x[[smode]] <- do.call(cbind, dots[smode == smodes])
     if (recycle.columns)
       column.classes <- c(column.classes, rep(smode, ncol(x[[smode]])))
+  }
+
+  x$column.classes <- column.classes
+  class(x) <- "xtsdfn"
+
+  x
+}
+
+as.xtsdfn.data.frame <- function(df, index = NULL) {
+  if (is.null(index)) index <- rownames(df)
+  column.classes <- vector("numeric", ncol(df))
+
+  df.column.classes <- sapply(df, storage.mode)
+  smodes <- unique(df.column.classes)
+
+  x <- list()
+  x$index <- index
+  x$smodes <- smodes
+
+  for (smode in smodes) {
+    x[[smode]] <- as.xts(df[, df.column.classes == smode])
+    column.classes[df.column.classes == smode] <- smode
   }
 
   x$column.classes <- column.classes
@@ -68,6 +90,8 @@ print.xtsdfn <- function(x, ...) {
   ## some magic with indices
   index.aux <- get.aux.index(x)
   class.xts <- list()
+  ## FIXME: dirty hack
+  if (missing(j)) j <- 1:ncol(x)
   for (smode in x$smodes)
     class.xts[[smode]] <- x[[smode]][i, index.aux[intersect(which(x$column.classes == smode), j)]]
 

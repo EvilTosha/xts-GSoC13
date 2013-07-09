@@ -63,7 +63,10 @@ rownames(order.book) <- Sys.Date() + 1:nrow(order.book)
 ob.xtsdfn <- as.xtsdfn.data.frame(order.book)
 ob.xtsdf <- as.xtsdf(order.book)
 
-i <- 400:12000
+i <- 40:12000
 j <- c(3, 4, 7, 9)
 
 benchmark(ob.xtsdf[i, j], ob.xtsdfn[i, j])
+
+## correctness check
+identical(as.data.frame(ob.xtsdf[i, j]), as.data.frame(ob.xtsdfn[i, j]))

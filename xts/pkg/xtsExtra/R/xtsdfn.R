@@ -17,16 +17,21 @@ xtsdfn <- function(..., column.classes = NULL, index = NULL){
     recycle.columns <- TRUE
 
   for(smode in unique(smodes)) {
-    x[[smode]] <- do.call(cbind, dots[smode == smodes])
+    smode.columns <- dots[smode == smodes]
+    if (length(smode.columns) == 1)
+      x[[smode]] <- smode.columns[[1]]
+    else
+      x[[smode]] <- do.call(cbind, smode.columns)
     if (recycle.columns)
       column.classes <- c(column.classes, rep(smode, ncol(x[[smode]])))
   }
-
   x$column.classes <- column.classes
   class(x) <- "xtsdfn"
 
   x
 }
+
+as.xtsdfn <- function(x, ...) UseMethod("as.xtsdfn")
 
 as.xtsdfn.data.frame <- function(df, index = NULL) {
   if (is.null(index)) index <- rownames(df)
@@ -94,6 +99,5 @@ print.xtsdfn <- function(x, ...) {
   if (missing(j)) j <- 1:ncol(x)
   for (smode in x$smodes)
     class.xts[[smode]] <- x[[smode]][i, index.aux[intersect(which(x$column.classes == smode), j)]]
-
   do.call(xtsdfn, append(class.xts, list(index = x$index, column.classes = x$column.classes[j])))
 }

@@ -8,9 +8,9 @@ char.matrix <- matrix(rep("string", 40), ncol = 4)
 colnames(char.matrix) <- c("char1", "char2", "char3", "char4")
 char.xts <- as.xts(char.matrix, Sys.Date() + 1:10)
 
-column.classes <- rep(c("character", "double"), 4)
+column.smodes <- rep(c("character", "double"), 4)
 
-xdfn <- xtsdfn(num.xts, char.xts, column.classes = column.classes)
+xdfn <- xtsdfn(num.xts, char.xts, column.smodes = column.smodes)
 print(xdfn)
 
 print(xdfn[1:2, 3:5])
@@ -18,18 +18,18 @@ print(xdfn[1:2, 3:5])
 
 ## time test
 set.seed(21)
-numrow <- 1e3
+numrow <- 1e4
 numcol <- 100
 num.matrix <- matrix(rnorm(numrow * numcol), nrow = numrow)
 char.matrix <- matrix(as.character(rnorm(numrow * numcol)), nrow = numrow)
-column.classes <- c(rep("character", numcol), rep("double", numcol))
+column.smodes <- c(rep("character", numcol), rep("double", numcol))
 xdfn <- xtsdfn(as.xts(num.matrix, Sys.Date() + 1:numrow),
-               as.xts(char.matrix, Sys.Date() + 1:numrow), column.classes = column.classes)
+               as.xts(char.matrix, Sys.Date() + 1:numrow), column.smodes = column.smodes)
 
 d <- cbind(data.frame(num.matrix), data.frame(char.matrix))
 rownames(d) <- Sys.Date() + 1:numrow
 xdf <- as.xtsdf(d)
-i <- 1:5e2
+i <- 1:5e3
 j <- 1:100
 
 library(rbenchmark)

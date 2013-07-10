@@ -1,31 +1,39 @@
-xtsdfn <- function(..., column.classes = NULL, index = NULL){
+## Implementation model:
+## 1) An xtsdfn object is a list of xts object with some auxiliary parameters.
+## 2) There is one xts object for any storage mode ("character", "double", ...).
+## 3) Vector of all storage modes (smodes) is contained in parameter x$smodes
+## 4) Parameter x$column.smodes contains vector of smodes, which length is sum of lengths of all xts objects.
+##    i'th element in x$column.smodes represents storage mode of i'th column
+
+xtsdfn <- function(..., column.smodes = NULL, index = NULL){
   if (is.null(index) && !is.xts(..1))
     stop("First column needs to be an xts-series if index is not provided")
 
-  if(is.null(index)) index <- index(..1)
-
-  dots <- list(...)
-
-  smodes <- sapply(dots, storage.mode)
+  if (is.null(index)) index <- index(..1)
 
   x <- list()
   x$index <- index
+
+  dots <- list(...)
+  smodes <- sapply(dots, storage.mode)
   x$smodes <- unique(smodes)
 
   recycle.columns <- FALSE
-  if (is.null(column.classes))
+  if (is.null(column.smodes))
     recycle.columns <- TRUE
 
   for(smode in unique(smodes)) {
-    smode.columns <- dots[smode == smodes]
-    if (length(smode.columns) == 1)
-      x[[smode]] <- smode.columns[[1]]
+    columns <- dots[smode == smodes]
+    ## we need this check, because after subsetting there is only one xts object for each smode
+    ## but cbind of list of one element is time-consuming operation
+    if (length(columns) == 1)
+      x[[smode]] <- columns[[1]]
     else
-      x[[smode]] <- do.call(cbind, smode.columns)
+      x[[smode]] <- do.call(cbind, columns)
     if (recycle.columns)
-      column.classes <- c(column.classes, rep(smode, ncol(x[[smode]])))
+      column.smodes <- c(column.smodes, rep(smode, ncol(x[[smode]])))
   }
-  x$column.classes <- column.classes
+  x$column.smodes <- column.smodes
   class(x) <- "xtsdfn"
 
   x
@@ -35,9 +43,9 @@ as.xtsdfn <- function(x, ...) UseMethod("as.xtsdfn")
 
 as.xtsdfn.data.frame <- function(df, index = NULL) {
   if (is.null(index)) index <- rownames(df)
-  column.classes <- vector("numeric", ncol(df))
+  column.smodes <- vector("numeric", ncol(df))
 
-  df.column.classes <- sapply(df, storage.mode)
+  df.column.smodes <- sapply(df, storage.mode)
   smodes <- unique(df.column.classes)
 
   x <- list()
@@ -45,11 +53,11 @@ as.xtsdfn.data.frame <- function(df, index = NULL) {
   x$smodes <- smodes
 
   for (smode in smodes) {
-    x[[smode]] <- as.xts(df[, df.column.classes == smode])
-    column.classes[df.column.classes == smode] <- smode
+    x[[smode]] <- as.xts(df[, df.column.smodes == smode])
+    column.smodes[df.column.smodes == smode] <- smode
   }
 
-  x$column.classes <- column.classes
+  x$column.smodes <- column.smodes
   class(x) <- "xtsdfn"
 
   x
@@ -57,7 +65,7 @@ as.xtsdfn.data.frame <- function(df, index = NULL) {
 
 index.xtsdfn <- function(x) x$index
 
-dim.xtsdfn <- function(x) c(length(index(x)), length(x$column.classes))
+dim.xtsdfn <- function(x) c(length(index(x)), length(x$column.smodes))
 
 ## aux index maps each column index in xtsdfn object to indices in numeric and character parts
 ## aux index is only useful in conjuction with original index
@@ -66,23 +74,21 @@ get.aux.index <- function(x) {
   for (smode in x$smodes)
     class.indexes[[smode]] <- 0
 
-  ncol <- length(x$column.classes)
-  index.aux <- vector("numeric", ncol)
-  col.classes <- x$column.classes
-  for (i in 1:ncol) {
-    class.indexes[[col.classes[i]]] <- class.indexes[[col.classes[i]]] + 1
-    index.aux[i] <- class.indexes[[col.classes[i]]]
+  index.aux <- vector("numeric", ncol(x))
+  col.smodes <- x$column.smodes
+  for (i in 1:ncol(x)) {
+    class.indexes[[col.smodes[i]]] <- class.indexes[[col.smodes[i]]] + 1
+    index.aux[i] <- class.indexes[[col.smodes[i]]]
   }
   index.aux
 }
 
 
-## works extremely slow
 as.data.frame.xtsdfn <- function(x, row.names = NULL, optional = FALSE, ...) {
   if (is.null(row.names))
     row.names <- index(x)
   index.aux <- get.aux.index(x)
-  xts.list <- lapply(1:length(x$column.classes), function(i) x[[x$column.classes[i]]][, index.aux[i]])
+  xts.list <- lapply(1:length(x$column.smodes), function(i) x[[x$column.smodes[i]]][, index.aux[i]])
   class(xts.list) <- "xtsdf"
   as.data.frame(xts.list)
 }
@@ -98,6 +104,6 @@ print.xtsdfn <- function(x, ...) {
   ## FIXME: dirty hack
   if (missing(j)) j <- 1:ncol(x)
   for (smode in x$smodes)
-    class.xts[[smode]] <- x[[smode]][i, index.aux[intersect(which(x$column.classes == smode), j)]]
-  do.call(xtsdfn, append(class.xts, list(index = x$index, column.classes = x$column.classes[j])))
+    class.xts[[smode]] <- x[[smode]][i, index.aux[intersect(which(x$column.smodes == smode), j)]]
+  do.call(xtsdfn, append(class.xts, list(index = x$index, column.smodes = x$column.smodes[j])))
 }

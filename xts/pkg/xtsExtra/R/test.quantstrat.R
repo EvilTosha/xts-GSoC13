@@ -1,5 +1,6 @@
 require(xts)
 
+## tests with one class matrix just to ensure correctness and back-compatibility
 data(sample_matrix)
 
 xts.obj <- as.xts(sample_matrix, dateFormat='Date')
@@ -46,7 +47,12 @@ print(identical(cummax(xts.obj), as.xts(cummax(xtsdfn.obj))))
 print(identical(mean(xts.obj), mean(xtsdfn.obj)))
 
 
-df <- ## multiple class columns data.frame
+df <- data.frame(row.names=Sys.Date() + 1:10)
+df[, 1] <- 1:10
+df[, 2] <- c("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
+df[, 3] <- as.POSIXct("2000-01-01") + 1:10
+
+colnames(df) <- c("numeric", "character", "POSIXct")
 
 xtsdfn.obj2 <- as.xtsdfn(df)
 

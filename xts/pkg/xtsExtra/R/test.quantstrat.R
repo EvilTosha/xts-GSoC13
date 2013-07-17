@@ -14,6 +14,9 @@ j <- c(1, 3)
 
 print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
 
+i <- as.POSIXct("2007-01-03", "GMT")
+print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
+
 i <- "2007-01-03/2007-02-01"
 print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
 

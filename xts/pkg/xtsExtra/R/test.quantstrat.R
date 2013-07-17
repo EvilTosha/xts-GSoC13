@@ -8,6 +8,7 @@ xtsdfn.obj <- as.xtsdfn(xts)
 
 print(identical(index(xts.obj), index(xtsdfn.obj)))
 
+## basic subsetting tests
 i <- 10:120
 j <- c(1, 3)
 
@@ -47,7 +48,7 @@ print(identical(cummax(xts.obj), as.xts(cummax(xtsdfn.obj))))
 print(identical(mean(xts.obj), mean(xtsdfn.obj)))
 
 
-df <- data.frame(row.names=Sys.Date() + 1:10)
+df <- data.frame(row.names=as.Date("1990-01-01") + 0:9)
 df[, 1] <- 1:10
 df[, 2] <- c("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
 df[, 3] <- as.POSIXct("2000-01-01") + 1:10
@@ -62,3 +63,13 @@ print(identical(cumprod(xts.obj), as.xts(cumprod(xtsdfn.obj))))
 print(identical(cummin(xts.obj), as.xts(cummin(xtsdfn.obj))))
 print(identical(cummax(xts.obj), as.xts(cummax(xtsdfn.obj))))
 print(identical(mean(xts.obj), mean(xtsdfn.obj)))
+
+## subsetting assignment tests
+xtsdfn.obj2[, "numeric"] <- 101:110
+df2 <- df
+df2[, "numeric"] <- 101:110
+print(identical(df2, as.data.frame(xtsdfn.obj2)))
+
+xtsdfn.obj2[4, "character"] <- "forty"
+df2[4, "character"] <- "forty"
+print(identical(df2, as.data.frame(xtsdfn.obj2)))

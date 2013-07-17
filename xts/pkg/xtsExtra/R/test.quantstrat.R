@@ -50,7 +50,7 @@ print(identical(cummin(xts.obj), as.xts(cummin(xtsdfn.obj))))
 print(identical(cummax(xts.obj), as.xts(cummax(xtsdfn.obj))))
 print(identical(mean(xts.obj), mean(xtsdfn.obj)))
 
-
+## multiple class columns data.frame
 df <- data.frame(row.names=as.Date("1990-01-01") + 0:9)
 df[, 1] <- 1:10
 df[, 2] <- c("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
@@ -76,3 +76,13 @@ print(identical(df2, as.data.frame(xtsdfn.obj2)))
 xtsdfn.obj2[4, "character"] <- "forty"
 df2[4, "character"] <- "forty"
 print(identical(df2, as.data.frame(xtsdfn.obj2)))
+
+
+## quantstrat order book tests
+demo("bbands", package="quantstrat")
+order.book <- getOrderBook("bbands")$bbands$IBM
+
+## constructor parameters may change during development
+order.book.xtsdfn <- as.xtsdfn(order.book, column.classes = c("numeric", "numeric", "factor", "factor", "numeric", "factor", "POSIXct", "factor", "character", "factor", "character"))
+
+## TODO: get examples of order book operations from quantstrat package

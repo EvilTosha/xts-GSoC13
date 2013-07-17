@@ -5,6 +5,8 @@ data(sample_matrix)
 xts.obj <- as.xts(sample_matrix, dateFormat='Date')
 xtsdfn.obj <- as.xtsdfn(xts)
 
+print(identical(index(xts.obj), index(xtsdfn.obj)))
+
 i <- 10:120
 j <- c(1, 3)
 
@@ -13,11 +15,19 @@ print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
 i <- "2007-01-03/2007-02-01"
 print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
 
+i <- '2007-03'
+print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
+
+i <- '/2007-03-13'
+print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
+
 j <- c("Open", "Low")
 print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
 
 j <- c(TRUE, FALSE, FALSE, TRUE)
 print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
+
+## TODO: probably add some subsettig with first/last?
 
 ## cbind
 print(identical(xtsdfn.obj, cbind(xtsdfn.obj[, 1:2], xtsdfn.obj[, 3:4])))

@@ -66,16 +66,30 @@ print(identical(cummax(xts.obj), as.xts(cummax(xtsdfn.obj))))
 print(identical(mean(xts.obj), mean(xtsdfn.obj)))
 
 ## multiple class columns data.frame
+## merge test
 df <- data.frame(row.names=as.Date("1990-01-01") + 0:9)
-df[, 1] <- 1:10
-df[, 2] <- c("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
-df[, 3] <- as.POSIXct("2000-01-01") + 1:10
+df[, "numeric"] <- 1:10
+df[, "character"] <- c("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
+df[, "POSIXct"] <- as.POSIXct("2000-01-01") + 1:10
 
-colnames(df) <- c("numeric", "character", "POSIXct")
+df2 <- data.frame(row.names=as.Date("1990-01-01") + 0:9)
+df2[, "numeric"] <- 21:30
+df2[, "character2"] <- c("one2", "two2", "three2", "four2", "five2", "six2", "seven2", "eight2", "nine2", "ten2")
+
+## result of xts-like merge of df and df2
+df.res <- data.frame(row.names=as.Date("1990-01-01") + 0:9)
+df.res[, "numeric"] <- df[, "numeric"]
+df.res[, "character"] <- df[, "character"]
+df.res[, "POSIXct"] <- df[, "POSIXct"]
+df.res[, "numeric.1"] <- df2[, "numeric"]
+df.res[, "character2"] <- df2[, "character2"]
 
 xtsdfn.obj <- as.xtsdfn(df)
+xtsdfn.obj2 <- as.xtsdfn(df2)
 
-print(identical(dim(df), din(xtsdfn.obj)))
+print(identical(df.res, as.data.frame(merge(xtsdfn.obj, xtsdfn.obj2))))
+
+print(identical(dim(df), dim(xtsdfn.obj)))
 
 ## following tests should fail on non-numeric columns
 print(identical(cumsum(xts.obj), as.xts(cumsum(xtsdfn.obj))))

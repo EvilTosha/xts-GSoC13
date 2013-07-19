@@ -7,12 +7,16 @@ xts.obj <- as.xts(sample_matrix, dateFormat='Date')
 xtsdfn.obj <- as.xtsdfn(xts)
 
 print(identical(index(xts.obj), index(xtsdfn.obj)))
+print(identical(colnames(xts.obj), colnames(xtsdfn.obj)))
+print(identical(names(xts.obj), names(xtsdfn.obj)))
 
 ## basic subsetting tests
 i <- 10:120
 j <- c(1, 3)
 
 print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
+print(identitcal(xts.obj[i, ], as.xts(xtsdfn.obj[i, ])))
+print(identitcal(xts.obj[, j], as.xts(xtsdfn.obj[, j])))
 
 i <- as.POSIXct("2007-01-03", "GMT")
 print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
@@ -60,6 +64,8 @@ colnames(df) <- c("numeric", "character", "POSIXct")
 
 xtsdfn.obj2 <- as.xtsdfn(df)
 
+print(identical(dim(df), din(xtsdfn.obj2)))
+
 ## following tests should fail on non-numeric columns
 print(identical(cumsum(xts.obj), as.xts(cumsum(xtsdfn.obj))))
 print(identical(cumprod(xts.obj), as.xts(cumprod(xtsdfn.obj))))
@@ -76,6 +82,9 @@ print(identical(df2, as.data.frame(xtsdfn.obj2)))
 xtsdfn.obj2[4, "character"] <- "forty"
 df2[4, "character"] <- "forty"
 print(identical(df2, as.data.frame(xtsdfn.obj2)))
+
+## other subsetting tests
+colnames(xtsdfn.obj2) <- c("numeric_new", "character_new", "POSIXct_new")
 
 
 ## quantstrat order book tests

@@ -44,7 +44,18 @@ print(identical(xtsdfn.obj, cbind(xtsdfn.obj[, 1:2], xtsdfn.obj[, 3:4])))
 ## rbind
 print(identical(xtsdfn.obj, rbind(xtsdfn.obj[1:30, ], xtsdfn.obj[31:nrow(xtsdfn.obj)])))
 
-## TODO: add merge tests
+## merge
+set.seed(123)
+N <- 10
+df1 <- data.frame(x = sample(N,N), y1 = rnorm(N), row.names = as.Date(1990-01-01) + 1:N)
+df2 <- data.frame(x = sample(N,N), y2 = rnorm(N), row.names = as.Date(1990-01-01) + 1:N)
+
+xts1 <- as.xts(df1)
+xts2 <- as.xts(df2)
+xtsdfn1 <- as.xtsdfn(df1)
+xtsdfn2 <- as.xtsdfn(df2)
+
+print(identical(merge(xts1, xts2), as.xts(merge(xtsdfn1, xtsdfn2))))
 
 ## following tests should work fine
 
@@ -62,9 +73,9 @@ df[, 3] <- as.POSIXct("2000-01-01") + 1:10
 
 colnames(df) <- c("numeric", "character", "POSIXct")
 
-xtsdfn.obj2 <- as.xtsdfn(df)
+xtsdfn.obj <- as.xtsdfn(df)
 
-print(identical(dim(df), din(xtsdfn.obj2)))
+print(identical(dim(df), din(xtsdfn.obj)))
 
 ## following tests should fail on non-numeric columns
 print(identical(cumsum(xts.obj), as.xts(cumsum(xtsdfn.obj))))
@@ -74,18 +85,17 @@ print(identical(cummax(xts.obj), as.xts(cummax(xtsdfn.obj))))
 print(identical(mean(xts.obj), mean(xtsdfn.obj)))
 
 ## subsetting assignment tests
-xtsdfn.obj2[, "numeric"] <- 101:110
+xtsdfn.obj[, "numeric"] <- 101:110
 df2 <- df
 df2[, "numeric"] <- 101:110
-print(identical(df2, as.data.frame(xtsdfn.obj2)))
+print(identical(df2, as.data.frame(xtsdfn.obj)))
 
-xtsdfn.obj2[4, "character"] <- "forty"
+xtsdfn.obj[4, "character"] <- "forty"
 df2[4, "character"] <- "forty"
-print(identical(df2, as.data.frame(xtsdfn.obj2)))
+print(identical(df2, as.data.frame(xtsdfn.obj)))
 
 ## other subsetting tests
-colnames(xtsdfn.obj2) <- c("numeric_new", "character_new", "POSIXct_new")
-
+colnames(xtsdfn.obj) <- c("numeric_new", "character_new", "POSIXct_new")
 
 ## quantstrat order book tests
 demo("bbands", package="quantstrat")

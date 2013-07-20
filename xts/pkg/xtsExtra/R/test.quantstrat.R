@@ -4,7 +4,7 @@ require(xts)
 data(sample_matrix)
 
 xts.obj <- as.xts(sample_matrix, dateFormat='Date')
-xtsdfn.obj <- as.xtsdfn(xts)
+xtsdfn.obj <- as.xtsdfn(xts.obj)
 
 print(identical(index(xts.obj), index(xtsdfn.obj)))
 print(identical(colnames(xts.obj), colnames(xtsdfn.obj)))
@@ -14,35 +14,41 @@ print(identical(names(xts.obj), names(xtsdfn.obj)))
 i <- 10:120
 j <- c(1, 3)
 
-print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
-print(identitcal(xts.obj[i, ], as.xts(xtsdfn.obj[i, ])))
-print(identitcal(xts.obj[, j], as.xts(xtsdfn.obj[, j])))
+print(identical(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
+print(identical(xts.obj[i, ], as.xts(xtsdfn.obj[i, ])))
+print(identical(xts.obj[, j], as.xts(xtsdfn.obj[, j])))
 
 i <- as.POSIXct("2007-01-03", "GMT")
-print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
+print(identical(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
 
 i <- "2007-01-03/2007-02-01"
-print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
+print(identical(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
 
 i <- '2007-03'
-print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
+print(identical(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
 
 i <- '/2007-03-13'
-print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
+print(identical(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
 
 j <- c("Open", "Low")
-print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
+print(identical(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
 
 j <- c(TRUE, FALSE, FALSE, TRUE)
-print(identitcal(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
+print(identical(xts.obj[i, j], as.xts(xtsdfn.obj[i, j])))
 
 ## TODO: probably add some subsettig with first/last?
 
 ## cbind
 print(identical(xtsdfn.obj, cbind(xtsdfn.obj[, 1:2], xtsdfn.obj[, 3:4])))
+print(identical(xtsdfn.obj, cbind(xtsdfn.obj[, "Open"], xtsdfn.obj[, c(FALSE, TRUE, TRUE, TRUE)])))
+print(identical(cbind(xts.obj[1:2, ], xts.obj[, 3:4]), as.xts(cbind(xtsdfn.obj[1:2, ], xtsdfn.obj[, 3:4]))))
 
 ## rbind
 print(identical(xtsdfn.obj, rbind(xtsdfn.obj[1:30, ], xtsdfn.obj[31:nrow(xtsdfn.obj)])))
+print(identical(xtsdfn.obj, rbind(xtsdfn.obj["2007-03-14/", ], xtsdfn.obj["/2007-03-13", ])))
+## following test should fail
+print(identical(rbind(xts.obj[1:2, ], xts.obj[, 3:4]), as.xts(rbind(xtsdfn.obj[1:2, ], xtsdfn.obj[, 3:4]))))
+
 
 ## merge
 set.seed(123)
@@ -113,14 +119,12 @@ colnames(xtsdfn.obj) <- c("numeric_new", "character_new", "POSIXct_new")
 
 ## quantstrat order book tests
 demo("bbands", package="quantstrat")
-order.book <- getOrderBook("bbands")$bbands$IBM
+order.book.xts <- getOrderBook("bbands")$bbands$IBM
 
 ## constructor parameters may change during development
-order.book.xtsdfn <- as.xtsdfn(order.book, column.classes = c("numeric", "numeric", "factor", "factor", "numeric", "factor", "POSIXct", "factor", "character", "factor", "character"))
+order.book.xtsdfn <- as.xtsdfn(order.book.xts, column.classes = c("numeric", "numeric", "factor", "factor", "numeric", "factor", "POSIXct", "factor", "character", "factor", "character"))
 
-## TODO: get examples of order book operations from quantstrat package
-
-## add new order
+## adding new order
 new.order.time <- Sys.Date()
 new.order <- xtsdfn(t(c(100, 96.3, "market", "long", NA, "closed", as.POSIXct("2008-01-01"), "", NA, 0, "ruleSignal.rule")),
                     order.by = new.order.time,

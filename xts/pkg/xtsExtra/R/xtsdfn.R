@@ -63,6 +63,8 @@ as.xtsdfn.data.frame <- function(df, index = NULL) {
   x
 }
 
+as.xtsdfn.xts <- function(x, ...) xtsdfn(x, ...)
+
 index.xtsdfn <- function(x) x$index
 
 dim.xtsdfn <- function(x) c(length(index(x)), length(x$column.smodes))

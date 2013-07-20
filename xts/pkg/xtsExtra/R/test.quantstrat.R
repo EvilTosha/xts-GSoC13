@@ -119,3 +119,14 @@ order.book <- getOrderBook("bbands")$bbands$IBM
 order.book.xtsdfn <- as.xtsdfn(order.book, column.classes = c("numeric", "numeric", "factor", "factor", "numeric", "factor", "POSIXct", "factor", "character", "factor", "character"))
 
 ## TODO: get examples of order book operations from quantstrat package
+
+## add new order
+new.order.time <- Sys.Date()
+new.order <- xtsdfn(t(c(100, 96.3, "market", "long", NA, "closed", as.POSIXct("2008-01-01"), "", NA, 0, "ruleSignal.rule")),
+                    order.by = new.order.time,
+                    dimnames=list(NULL, c("Order.Qty", "Order.Price", "Order.Type",
+                      "Order.Side", "Order.Threshold", "Order.Status", "Order.StatusTime",
+                      "Prefer", "Order.Set", "Txn.Fees", "Rule")))
+
+order.book.xtsdfn <- rbind(order.book.xtsdfn, new.order)
+print(identical(order.book.xtsdfn[Sys.Date, ], new.order))

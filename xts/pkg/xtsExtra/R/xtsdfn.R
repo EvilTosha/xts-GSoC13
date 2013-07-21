@@ -93,9 +93,14 @@ get.aux.index <- function(x) {
 as.xts.xtsdfn <- function(x) {
   if (length(x$column.smodes) == 0)
     xts(NULL)
+  ## if there is only one smode available - simply return corresponding xts
+  else if (length(x$smodes) == 1)
+    x[[x$smodes[1]]]
+  ## else convert all to character xts
   else {
     index.aux <- get.aux.index(x)
     res <- x[[x$column.smodes[1]]][, index.aux[1]]
+    storage.mode(res) <- "character"
     for (i in 2:ncol(x))
       res <- cbind(res, x[[x$column.smodes[i]]][, index.aux[i]])
     res
@@ -121,7 +126,11 @@ print.xtsdfn <- function(x, ...) {
   class.xts <- list()
   ## FIXME: dirty hack
   if (missing(j)) j <- 1:ncol(x)
-  for (smode in x$smodes)
-    class.xts[[smode]] <- x[[smode]][i, index.aux[intersect(which(x$column.smodes == smode), j)]]
+  for (smode in x$smodes) {
+    smode.xts <- x[[smode]][i, index.aux[intersect(which(x$column.smodes == smode), j)]]
+    if (length(smode.xts) > 0) {
+      class.xts[[smode]] <- smode.xts
+    }
+  }
   do.call(xtsdfn, append(class.xts, list(index = x$index, column.smodes = x$column.smodes[j])))
 }

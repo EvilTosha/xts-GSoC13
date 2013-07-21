@@ -8,7 +8,6 @@ xtsdfn.obj <- as.xtsdfn(xts.obj)
 
 print(identical(index(xts.obj), index(xtsdfn.obj)))
 print(identical(colnames(xts.obj), colnames(xtsdfn.obj)))
-print(identical(names(xts.obj), names(xtsdfn.obj)))
 
 ## basic subsetting tests
 i <- 10:120

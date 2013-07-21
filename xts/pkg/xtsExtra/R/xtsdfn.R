@@ -139,11 +139,11 @@ print.xtsdfn <- function(x, ...) {
 }
 
 `[.xtsdfn` <- function(x, i, j, drop = FALSE, which.i = FALSE, ...) {
-  ## some magic with indices
   index.aux <- get.aux.index(x)
   class.xts <- list()
-  ## FIXME: dirty hack
-  if (missing(j)) j <- 1:ncol(x)
+  if (missing(j)) j      <- 1:ncol(x)
+  if (is.character(j)) j <- which(colnames(x) %in% j)
+  if (is.logical(j)) j   <- which(j)
   for (smode in x$smodes) {
     smode.xts <- x[[smode]][i, index.aux[intersect(which(x$column.smodes == smode), j)]]
     if (length(smode.xts) > 0) {

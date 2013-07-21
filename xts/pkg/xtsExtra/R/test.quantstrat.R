@@ -114,9 +114,6 @@ xtsdfn.obj[4, "character"] <- "forty"
 df2[4, "character"] <- "forty"
 print(identical(df2, as.data.frame(xtsdfn.obj)))
 
-## other subsetting tests
-colnames(xtsdfn.obj) <- c("numeric_new", "character_new", "POSIXct_new")
-
 ## quantstrat order book tests
 demo("bbands", package="quantstrat")
 order.book.xts <- getOrderBook("bbands")$bbands$IBM

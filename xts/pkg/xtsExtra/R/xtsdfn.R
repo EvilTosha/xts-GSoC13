@@ -41,19 +41,24 @@ xtsdfn <- function(..., column.smodes = NULL, index = NULL){
 
 as.xtsdfn <- function(x, ...) UseMethod("as.xtsdfn")
 
-as.xtsdfn.data.frame <- function(df, index = NULL) {
-  if (is.null(index)) index <- rownames(df)
+as.xtsdfn.data.frame <- function(df, order.by = "rownames", ...) {
+  if(!is.timeBased(order.by)) {
+    if(order.by == "rownames") {
+      order.by <- rownames(df)
+    }
+    order.by <- as.POSIXct(order.by, ...)
+  }
   column.smodes <- vector("numeric", ncol(df))
 
   df.column.smodes <- sapply(df, storage.mode)
-  smodes <- unique(df.column.classes)
+  smodes <- unique(df.column.smodes)
 
   x <- list()
-  x$index <- index
+  x$index <- order.by
   x$smodes <- smodes
 
   for (smode in smodes) {
-    x[[smode]] <- as.xts(df[, df.column.smodes == smode])
+    x[[smode]] <- as.xts(df[, df.column.smodes == smode, drop = FALSE], order.by = order.by)
     column.smodes[df.column.smodes == smode] <- smode
   }
 
@@ -85,6 +90,17 @@ get.aux.index <- function(x) {
   index.aux
 }
 
+as.xts.xtsdfn <- function(x) {
+  if (length(x$column.smodes) == 0)
+    xts(NULL)
+  else {
+    index.aux <- get.aux.index(x)
+    res <- x[[x$column.smodes[1]]][, index.aux[1]]
+    for (i in 2:ncol(x))
+      res <- cbind(res, x[[x$column.smodes[i]]][, index.aux[i]])
+    res
+  }
+}
 
 as.data.frame.xtsdfn <- function(x, row.names = NULL, optional = FALSE, ...) {
   if (is.null(row.names))

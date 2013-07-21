@@ -90,6 +90,20 @@ get.aux.index <- function(x) {
   index.aux
 }
 
+dimnames.xtsdfn <- function(x) {
+  if (length(x$smodes) == 0)
+    NULL
+  else {
+    index.aux <- get.aux.index(x)
+    colnames <- vector("character", ncol(x))
+    for (i in 1:ncol(x)) {
+      colnames[i] <- colnames(x[[x$column.smodes[i]]])[index.aux[i]]
+    }
+    list(rownames(x[[x$smodes[1]]]), colnames)
+  }
+}
+
+
 as.xts.xtsdfn <- function(x) {
   if (length(x$column.smodes) == 0)
     xts(NULL)

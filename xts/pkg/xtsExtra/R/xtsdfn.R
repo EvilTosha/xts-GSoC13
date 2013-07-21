@@ -99,10 +99,14 @@ as.xts.xtsdfn <- function(x) {
   ## else convert all to character xts
   else {
     index.aux <- get.aux.index(x)
+    ## TODO: find a way without converting each column to character explicitly
     res <- x[[x$column.smodes[1]]][, index.aux[1]]
     storage.mode(res) <- "character"
-    for (i in 2:ncol(x))
-      res <- cbind(res, x[[x$column.smodes[i]]][, index.aux[i]])
+    for (i in 2:ncol(x)) {
+      col <- x[[x$column.smodes[i]]][, index.aux[i]]
+      storage.mode(col) <- "character"
+      res <- cbind(res, col)
+    }
     res
   }
 }

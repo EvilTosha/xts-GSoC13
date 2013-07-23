@@ -25,7 +25,7 @@ xtsdfn <- function(..., column.smodes = NULL, index = NULL){
   }
   x$smodes <- unique(smodes)
 
-  for(smode in unique(smodes)) {
+  for (smode in unique(smodes)) {
     columns <- dots[smode == smodes]
     ## we need this check, because after subsetting there is only one xts object for each smode
     ## but cbind of list of one element is time-consuming operation
@@ -130,13 +130,12 @@ as.xts.xtsdfn <- function(x) {
   }
 }
 
-as.data.frame.xtsdfn <- function(x, row.names = NULL, optional = FALSE, ...) {
+as.data.frame.xtsdfn <- function(x, row.names = NULL, ...) {
   if (is.null(row.names))
     row.names <- index(x)
   index.aux <- get.aux.index(x)
   xts.list <- lapply(1:length(x$column.smodes), function(i) x[[x$column.smodes[i]]][, index.aux[i]])
-  class(xts.list) <- "xtsdf"
-  as.data.frame(xts.list)
+  do.call(data.frame, append(xts.list, list(row.names = row.names, ...)))
 }
 
 print.xtsdfn <- function(x, ...) {

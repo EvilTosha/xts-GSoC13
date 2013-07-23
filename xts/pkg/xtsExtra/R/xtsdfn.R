@@ -15,12 +15,15 @@ xtsdfn <- function(..., column.smodes = NULL, index = NULL){
   x$index <- index
 
   dots <- list(...)
-  smodes <- sapply(dots, storage.mode)
-  x$smodes <- unique(smodes)
-
-  recycle.columns <- FALSE
-  if (is.null(column.smodes))
+  if (!is.null(column.smodes)) {
+    smodes <- unique(column.smodes)
+    recycle.columns <- FALSE
+  }
+  else {
+    smodes <- sapply(dots, storage.mode)
     recycle.columns <- TRUE
+  }
+  x$smodes <- unique(smodes)
 
   for(smode in unique(smodes)) {
     columns <- dots[smode == smodes]
@@ -38,6 +41,8 @@ xtsdfn <- function(..., column.smodes = NULL, index = NULL){
 
   x
 }
+
+is.xtsdfn <- function(x) inherits(x, "xtsdfn")
 
 as.xtsdfn <- function(x, ...) UseMethod("as.xtsdfn")
 
@@ -151,4 +156,22 @@ print.xtsdfn <- function(x, ...) {
     }
   }
   do.call(xtsdfn, append(class.xts, list(index = x$index, column.smodes = x$column.smodes[j])))
+}
+
+
+cbind.xtsdfn <- function(..., deparse.level = 1) {
+  dots <- list(...)
+  column.smodes <- do.call(append, lapply(dots, function(x) x$column.smodes))
+
+  class.xts <- list()
+  for (obj in dots) {
+    for (smode in obj$smodes) {
+      if (is.null(class.xts[[smode]]))
+        class.xts[[smode]] <- obj[[smode]]
+      else
+        class.xts[[smode]] <- cbind(class.xts[[smode]], obj[[smode]])
+    }
+  }
+
+  do.call(xtsdfn, append(class.xts, list(column.smodes = column.smodes)))
 }

@@ -175,3 +175,24 @@ cbind.xtsdfn <- function(..., deparse.level = 1) {
 
   do.call(xtsdfn, append(class.xts, list(column.smodes = column.smodes)))
 }
+
+
+rbind.xtsdfn <- function(..., deparse.level = 1) {
+  ## only works with perfectly matching (in rbind sense) objects
+  dots <- list(...)
+
+  if (length(dots) == 0)
+    NULL
+  else {
+    class.xts <- list()
+    ref.obj <- dots[[1]]
+    for (smode in ref.obj$smodes)
+      class.xts[[smode]] <- ref.obj[[smode]]
+    for (obj in dots[-1]) {
+      for (smode in ref.obj$smodes)
+        class.xts[[smode]] <- rbind(class.xts[[smode]], obj[[smode]])
+    }
+    do.call(xtsdfn, append(class.xts, list(column.smodes = ref.obj$column.smodes)))
+  }
+
+}

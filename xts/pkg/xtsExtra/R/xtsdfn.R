@@ -153,10 +153,31 @@ print.xtsdfn <- function(x, ...) {
     if (length(smode.xts) > 0) {
       class.xts[[smode]] <- smode.xts
     }
+    index <- x[[smode]][i, , which.i = TRUE]
   }
-  do.call(xtsdfn, append(class.xts, list(index = x$index, column.smodes = x$column.smodes[j])))
+  do.call(xtsdfn, append(class.xts, list(index = index, column.smodes = x$column.smodes[j])))
 }
 
+`[<-.xtsdfn` <- function(x, i, j, value) {
+  index.aux <- get.aux.index(x)
+
+  if (missing(j)) j      <- 1:ncol(x)
+  if (is.character(j)) j <- which(colnames(x) %in% j)
+  if (is.logical(j)) j   <- which(j)
+
+  ## TODO: this won't work with vector to column assignment
+  if (is.atomic(value) || is.vector(value) || is.list(value))
+    value <- as.data.frame(value, stringsAsFactors = FALSE)
+
+  for (smode in x$smodes) {
+    sub.j <- intersect(which(x$column.smodes == smode), j)
+    smode.j <- index.aux[sub.j]
+    value.j <- which(sub.j %in% j)
+    if (length(smode.j) > 0)
+      x[[smode]][i, smode.j] <- value[, value.j]
+  }
+  x
+}
 
 cbind.xtsdfn <- function(..., deparse.level = 1) {
   dots <- list(...)

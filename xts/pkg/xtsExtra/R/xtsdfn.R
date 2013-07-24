@@ -158,13 +158,17 @@ print.xtsdfn <- function(x, ...) {
   if (is.character(j)) j <- which(colnames(x) %in% j)
   if (is.logical(j)) j   <- which(j)
   for (smode in x$smodes) {
-    smode.xts <- x[[smode]][i, index.aux[intersect(which(x$column.smodes == smode), j)]]
-    if (length(smode.xts) > 0) {
+    ## set of columns of current smode
+    smode.columns <- which(x$column.smodes == smode)
+    smode.xts <- x[[smode]][i, which(smode.columns %in% j)]
+    if (length(smode.xts) > 0)
       class.xts[[smode]] <- smode.xts
-    }
-    index <- x[[smode]][i, , which.i = TRUE]
+    if (!missing(i))
+      index <- index(x[[smode]])[x[[smode]][i, , which.i = TRUE]]
+    else
+      index <- index(x[[smode]])
   }
-  do.call(xtsdfn, append(class.xts, list(index = index, column.smodes = x$column.smodes[j])))
+  do.call(xtsdfn, append(class.xts, list(order.by = index, column.smodes = x$column.smodes[j])))
 }
 
 `[<-.xtsdfn` <- function(x, i, j, value) {

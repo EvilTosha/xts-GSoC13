@@ -152,8 +152,8 @@ print.xtsdfn <- function(x, ...) {
 }
 
 `[.xtsdfn` <- function(x, i, j, drop = FALSE, which.i = FALSE, ...) {
-  index.aux <- get.aux.index(x)
-  class.xts <- list()
+  ## smode.xts - a list, which contains for each storage mode a corresponding xts object
+  smode.xts <- list()
   if (missing(j)) j      <- 1:ncol(x)
   if (is.character(j)) j <- which(colnames(x) %in% j)
   if (is.logical(j)) j   <- which(j)
@@ -162,18 +162,16 @@ print.xtsdfn <- function(x, ...) {
     smode.columns <- which(x$column.smodes == smode)
     smode.xts <- x[[smode]][i, which(smode.columns %in% j)]
     if (length(smode.xts) > 0)
-      class.xts[[smode]] <- smode.xts
+      smode.xts[[smode]] <- smode.xts
     if (!missing(i))
       index <- index(x[[smode]])[x[[smode]][i, , which.i = TRUE]]
     else
       index <- index(x[[smode]])
   }
-  do.call(xtsdfn, append(class.xts, list(order.by = index, column.smodes = x$column.smodes[j])))
+  do.call(xtsdfn, append(smode.xts, list(order.by = index, column.smodes = x$column.smodes[j])))
 }
 
 `[<-.xtsdfn` <- function(x, i, j, value) {
-  index.aux <- get.aux.index(x)
-
   if (missing(j)) j      <- 1:ncol(x)
   if (is.character(j)) j <- which(colnames(x) %in% j)
   if (is.logical(j)) j   <- which(j)
@@ -183,9 +181,9 @@ print.xtsdfn <- function(x, ...) {
     value <- as.data.frame(value, stringsAsFactors = FALSE)
 
   for (smode in x$smodes) {
-    sub.j <- intersect(which(x$column.smodes == smode), j)
-    smode.j <- index.aux[sub.j]
-    value.j <- which(sub.j %in% j)
+    smode.columns <- which(x$column.smodes == smode)
+    smode.j <- which(smode.columns %in% j)
+    value.j <- which(j %in% smode.columns)
     if (length(smode.j) > 0)
       x[[smode]][i, smode.j] <- value[, value.j]
   }

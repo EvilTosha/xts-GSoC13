@@ -111,8 +111,8 @@ dimnames.xtsdfn <- function(x) {
   else {
     index.aux <- get.aux.index(x)
     colnames <- vector("character", ncol(x))
-    for (i in 1:ncol(x))
-      colnames[i] <- colnames(x[[x$column.smodes[i]]])[index.aux[i]]
+    for (smode in x$smodes)
+      colnames[x$column.smodes == smode] <- colnames(x[[smode]])
     list(rownames(x[[x$smodes[1]]]), colnames)
   }
 }

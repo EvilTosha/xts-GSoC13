@@ -5,30 +5,31 @@
 ## 4) Parameter x$column.smodes contains vector of smodes, which length is sum of lengths of all xts objects.
 ##    i'th element in x$column.smodes represents storage mode of i'th column
 
-xtsdfn <- function(..., column.smodes = NULL, index = NULL){
-  if (is.null(index) && !is.xts(..1))
-    stop("First column needs to be an xts-series if index is not provided")
+## constructor only accepts xts objects as input
+xtsdfn <- function(..., column.smodes = NULL, order.by = NULL){
+  dots <- list(...)
+  if (!all(sapply(dots, is.xts)))
+    stop("All provided objects need to be a xts objects")
 
-  if (is.null(index)) index <- index(..1)
+  if (is.null(order.by)) order.by <- index(..1)
 
   x <- list()
-  x$index <- index
+  x$index <- order.by
 
-  dots <- list(...)
   if (!is.null(column.smodes)) {
     smodes <- unique(column.smodes)
     recycle.columns <- FALSE
   }
   else {
-    smodes <- sapply(dots, storage.mode)
+    smodes <- unique(sapply(dots, storage.mode))
     recycle.columns <- TRUE
   }
-  x$smodes <- unique(smodes)
+  x$smodes <- smodes
 
-  for (smode in unique(smodes)) {
+  for (smode in smodes) {
     columns <- dots[smode == smodes]
     ## we need this check, because after subsetting there is only one xts object for each smode
-    ## but cbind of list of one element is time-consuming operation
+    ## but cbind of the list of one element is quite time-consuming operation
     if (length(columns) == 1)
       x[[smode]] <- columns[[1]]
     else
@@ -39,18 +40,35 @@ xtsdfn <- function(..., column.smodes = NULL, index = NULL){
   x$column.smodes <- column.smodes
   class(x) <- "xtsdfn"
 
+  x <- make.unique.colnames(x)
+
   x
 }
 
 is.xtsdfn <- function(x) inherits(x, "xtsdfn")
 
+## aux index maps each column index in xtsdfn object to indices in numeric and character parts
+## aux index is only useful in conjuction with original index
+get.aux.index <- function(x) {
+  class.indexes <- list()
+  for (smode in x$smodes)
+    class.indexes[[smode]] <- 0
+
+  index.aux <- vector("numeric", ncol(x))
+  col.smodes <- x$column.smodes
+  for (i in 1:ncol(x)) {
+    class.indexes[[col.smodes[i]]] <- class.indexes[[col.smodes[i]]] + 1
+    index.aux[i] <- class.indexes[[col.smodes[i]]]
+  }
+  index.aux
+}
+
 as.xtsdfn <- function(x, ...) UseMethod("as.xtsdfn")
 
 as.xtsdfn.data.frame <- function(df, order.by = "rownames", ...) {
-  if(!is.timeBased(order.by)) {
-    if(order.by == "rownames") {
+  if (!is.timeBased(order.by)) {
+    if(order.by == "rownames")
       order.by <- rownames(df)
-    }
     order.by <- as.POSIXct(order.by, ...)
   }
   column.smodes <- vector("numeric", ncol(df))
@@ -79,20 +97,12 @@ index.xtsdfn <- function(x) x$index
 
 dim.xtsdfn <- function(x) c(length(index(x)), length(x$column.smodes))
 
-## aux index maps each column index in xtsdfn object to indices in numeric and character parts
-## aux index is only useful in conjuction with original index
-get.aux.index <- function(x) {
-  class.indexes <- list()
+## xts can't have same name for different columns, so xtsdfn should replicate this behavior
+make.unique.colnames <- function(x) {
+  colnames <- make.unique(colnames(x))
   for (smode in x$smodes)
-    class.indexes[[smode]] <- 0
-
-  index.aux <- vector("numeric", ncol(x))
-  col.smodes <- x$column.smodes
-  for (i in 1:ncol(x)) {
-    class.indexes[[col.smodes[i]]] <- class.indexes[[col.smodes[i]]] + 1
-    index.aux[i] <- class.indexes[[col.smodes[i]]]
-  }
-  index.aux
+    colnames(x[[smode]]) <- colnames[x$column.smodes == smode]
+  x
 }
 
 dimnames.xtsdfn <- function(x) {
@@ -101,9 +111,8 @@ dimnames.xtsdfn <- function(x) {
   else {
     index.aux <- get.aux.index(x)
     colnames <- vector("character", ncol(x))
-    for (i in 1:ncol(x)) {
+    for (i in 1:ncol(x))
       colnames[i] <- colnames(x[[x$column.smodes[i]]])[index.aux[i]]
-    }
     list(rownames(x[[x$smodes[1]]]), colnames)
   }
 }
@@ -214,5 +223,4 @@ rbind.xtsdfn <- function(..., deparse.level = 1) {
     }
     do.call(xtsdfn, append(class.xts, list(column.smodes = ref.obj$column.smodes)))
   }
-
 }

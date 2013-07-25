@@ -1,6 +1,6 @@
 ## Implementation model:
 ## 1) An xtsdfn object is a list of xts object with some auxiliary parameters.
-## 2) There is one xts object for any storage mode ("character", "double", ...).
+## 2) There is one xts object for each storage mode ("character", "double", ...).
 ## 3) Vector of all storage modes (smodes) is contained in parameter x$smodes
 ## 4) Parameter x$column.smodes contains vector of smodes, which length is sum of lengths of all xts objects.
 ##    i'th element in x$column.smodes represents storage mode of i'th column
@@ -9,13 +9,15 @@
 xtsdfn <- function(..., column.smodes = NULL, order.by = NULL){
   dots <- list(...)
   if (!all(sapply(dots, is.xts)))
-    stop("All provided objects need to be a xts objects")
+    stop("All provided objects need to be an xts objects")
 
   if (is.null(order.by)) order.by <- index(..1)
 
   x <- list()
   x$index <- order.by
 
+  ## if column.smodes is not provided, we just cbind all xts objects and
+  ## recycle column.smodes as vector of blocks for each smode (of length ncol(x[[smode]])
   if (!is.null(column.smodes)) {
     smodes <- unique(column.smodes)
     recycle.columns <- FALSE
@@ -40,15 +42,14 @@ xtsdfn <- function(..., column.smodes = NULL, order.by = NULL){
   x$column.smodes <- column.smodes
   class(x) <- "xtsdfn"
 
-  x <- make.unique.colnames(x)
-
-  x
+  make.unique.colnames(x)
 }
 
 is.xtsdfn <- function(x) inherits(x, "xtsdfn")
 
-## aux index maps each column index in xtsdfn object to indices in numeric and character parts
-## aux index is only useful in conjuction with original index
+## aux index maps each column index in xtsdfn object to indices in corresponding smode xts object
+## i.e. if x$column.smodes = c("double", "character", "double", "logical", "character", "character"),
+## get.aux.index = c(1, 1, 2, 1, 2, 3)
 get.aux.index <- function(x) {
   class.indexes <- list()
   for (smode in x$smodes)
@@ -88,7 +89,7 @@ as.xtsdfn.data.frame <- function(df, order.by = "rownames", ...) {
   x$column.smodes <- column.smodes
   class(x) <- "xtsdfn"
 
-  x
+  make.unique.colnames(x)
 }
 
 as.xtsdfn.xts <- function(x, ...) xtsdfn(x, ...)
@@ -109,7 +110,6 @@ dimnames.xtsdfn <- function(x) {
   if (length(x$smodes) == 0)
     NULL
   else {
-    index.aux <- get.aux.index(x)
     colnames <- vector("character", ncol(x))
     for (smode in x$smodes)
       colnames[x$column.smodes == smode] <- colnames(x[[smode]])
@@ -154,9 +154,11 @@ print.xtsdfn <- function(x, ...) {
 `[.xtsdfn` <- function(x, i, j, drop = FALSE, which.i = FALSE, ...) {
   ## smode.xts - a list, which contains for each storage mode a corresponding xts object
   smode.xts <- list()
+
   if (missing(j)) j      <- 1:ncol(x)
   if (is.character(j)) j <- which(colnames(x) %in% j)
   if (is.logical(j)) j   <- which(j)
+
   for (smode in x$smodes) {
     ## set of columns of current smode
     smode.columns <- which(x$column.smodes == smode)
@@ -194,17 +196,17 @@ cbind.xtsdfn <- function(..., deparse.level = 1) {
   dots <- list(...)
   column.smodes <- do.call(append, lapply(dots, function(x) x$column.smodes))
 
-  class.xts <- list()
+  smode.xts <- list()
   for (obj in dots) {
     for (smode in obj$smodes) {
-      if (is.null(class.xts[[smode]]))
-        class.xts[[smode]] <- obj[[smode]]
+      if (is.null(smode.xts[[smode]]))
+        smode.xts[[smode]] <- obj[[smode]]
       else
-        class.xts[[smode]] <- cbind(class.xts[[smode]], obj[[smode]])
+        smode.xts[[smode]] <- cbind(smode.xts[[smode]], obj[[smode]])
     }
   }
 
-  do.call(xtsdfn, append(class.xts, list(column.smodes = column.smodes)))
+  do.call(xtsdfn, append(smode.xts, list(column.smodes = column.smodes)))
 }
 
 
@@ -215,14 +217,14 @@ rbind.xtsdfn <- function(..., deparse.level = 1) {
   if (length(dots) == 0)
     NULL
   else {
-    class.xts <- list()
+    smode.xts <- list()
     ref.obj <- dots[[1]]
     for (smode in ref.obj$smodes)
-      class.xts[[smode]] <- ref.obj[[smode]]
+      smode.xts[[smode]] <- ref.obj[[smode]]
     for (obj in dots[-1]) {
       for (smode in ref.obj$smodes)
-        class.xts[[smode]] <- rbind(class.xts[[smode]], obj[[smode]])
+        smode.xts[[smode]] <- rbind(smode.xts[[smode]], obj[[smode]])
     }
-    do.call(xtsdfn, append(class.xts, list(column.smodes = ref.obj$column.smodes)))
+    do.call(xtsdfn, append(smode.xts, list(column.smodes = ref.obj$column.smodes)))
   }
 }

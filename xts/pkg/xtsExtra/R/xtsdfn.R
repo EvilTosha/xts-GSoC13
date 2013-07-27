@@ -144,7 +144,7 @@ as.data.frame.xtsdfn <- function(x, row.names = NULL, ...) {
     row.names <- index(x)
   index.aux <- get.aux.index(x)
   xts.list <- lapply(1:length(x$column.smodes), function(i) x[[x$column.smodes[i]]][, index.aux[i]])
-  do.call(data.frame, append(xts.list, list(row.names = row.names, ...)))
+  do.call(data.frame, append(xts.list, list(row.names = row.names, stringsAsFactors = FALSE, ...)))
 }
 
 print.xtsdfn <- function(x, ...) {

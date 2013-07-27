@@ -56,10 +56,13 @@ merge.xtsdfn <- function(..., all = TRUE, fill = NA) {
   smode.xts <- list()
   for (obj in dots) {
     for (smode in obj$smodes) {
-      if (is.null(smode.xts[[smode]]))
+      if (is.null(smode.xts[[smode]])) {
+        storage.mode(index.xts) <- smode
         smode.xts[[smode]] <- merge(obj[[smode]], index.xts, all = all, fill = fill)
-      else
+      }
+      else {
         smode.xts[[smode]] <- merge(smode.xts[[smode]], obj[[smode]], all = all, fill = fill)
+      }
     }
   }
 

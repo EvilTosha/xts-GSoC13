@@ -1,6 +1,6 @@
 ## Implementation model:
-## 1) An xtsdfn object is a list of xts object with some auxiliary parameters.
-## 2) There is one xts object for each storage mode ("character", "double", ...).
+## 1) An xtsdfn object is a list of xts objects with some auxiliary parameters.
+## 2) There is one xts object for each class ("character", "double", ...).
 ## 3) Vector of all storage modes (smodes) is contained in parameter x$smodes
 ## 4) Parameter x$column.smodes contains vector of smodes, which length is sum of lengths of all xts objects.
 ##    i'th element in x$column.smodes represents storage mode of i'th column
@@ -162,9 +162,9 @@ print.xtsdfn <- function(x, ...) {
   for (smode in x$smodes) {
     ## set of columns of current smode
     smode.columns <- which(x$column.smodes == smode)
-    smode.xts <- x[[smode]][i, which(smode.columns %in% j)]
-    if (length(smode.xts) > 0)
-      smode.xts[[smode]] <- smode.xts
+    sub.xts <- x[[smode]][i, which(smode.columns %in% j)]
+    if (length(sub.xts) > 0)
+      smode.xts[[smode]] <- sub.xts
     if (!missing(i))
       index <- index(x[[smode]])[x[[smode]][i, , which.i = TRUE]]
     else
@@ -190,41 +190,4 @@ print.xtsdfn <- function(x, ...) {
       x[[smode]][i, smode.j] <- value[, value.j]
   }
   x
-}
-
-cbind.xtsdfn <- function(..., deparse.level = 1) {
-  dots <- list(...)
-  column.smodes <- do.call(append, lapply(dots, function(x) x$column.smodes))
-
-  smode.xts <- list()
-  for (obj in dots) {
-    for (smode in obj$smodes) {
-      if (is.null(smode.xts[[smode]]))
-        smode.xts[[smode]] <- obj[[smode]]
-      else
-        smode.xts[[smode]] <- cbind(smode.xts[[smode]], obj[[smode]])
-    }
-  }
-
-  do.call(xtsdfn, append(smode.xts, list(column.smodes = column.smodes)))
-}
-
-
-rbind.xtsdfn <- function(..., deparse.level = 1) {
-  ## only works with perfectly matching (in rbind sense) objects
-  dots <- list(...)
-
-  if (length(dots) == 0)
-    NULL
-  else {
-    smode.xts <- list()
-    ref.obj <- dots[[1]]
-    for (smode in ref.obj$smodes)
-      smode.xts[[smode]] <- ref.obj[[smode]]
-    for (obj in dots[-1]) {
-      for (smode in ref.obj$smodes)
-        smode.xts[[smode]] <- rbind(smode.xts[[smode]], obj[[smode]])
-    }
-    do.call(xtsdfn, append(smode.xts, list(column.smodes = ref.obj$column.smodes)))
-  }
 }

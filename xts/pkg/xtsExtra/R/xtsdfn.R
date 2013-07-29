@@ -146,12 +146,33 @@ as.xts.xtsdfn <- function(x) {
   }
 }
 
+intersects <- function(a, b) length(intersect(a, b)) > 0
+
+## first version, needs improvements
+restore.column.class <- function(column, class) {
+  if (intersects(class, c("numeric", "logical", "character", "integer")))
+    column
+  else {
+    if (intersects(class, c("Date")))
+      as.Date(column)
+    else if (intersects(class, c("POSIXct")))
+      ## is it the right way to restore POSIXct?
+      .POSIXct(column)
+    ## TODO: add factor support
+  }
+}
+
 as.data.frame.xtsdfn <- function(x, row.names = NULL, ...) {
   if (is.null(row.names))
-    row.names <- index(x)
+    row.names <- as.character(index(x))
   index.aux <- get.aux.index(x)
-  xts.list <- lapply(seq(ncol(x)), function(i) x[[x$column.smodes[i]]][, index.aux[i]])
-  do.call(data.frame, append(xts.list, list(row.names = row.names, stringsAsFactors = FALSE, ...)))
+  df <- cbind.data.frame(lapply(seq(ncol(x)),
+                                function(i)
+                                restore.column.class(x[[x$column.smodes[i]]][, index.aux[i], drop = TRUE],
+                                                     x$column.classes[[i]])))
+  colnames(df) <- colnames(x)
+  rownames(df) <- row.names
+  df
 }
 
 print.xtsdfn <- function(x, ...) {

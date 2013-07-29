@@ -5,6 +5,13 @@
 ## 4) Parameter x$column.smodes contains vector of smodes, which length is sum of lengths of all xts objects.
 ##    i'th element in x$column.smodes represents storage mode of i'th column
 
+xts.restore.class <- function(x) {
+  if (any(sapply(class(x), function (class) class %in% c("logical", "numeric", "character"))))
+    NA
+  else
+    class(x)
+}
+
 ## constructor only accepts xts objects as input
 xtsdfn <- function(..., column.smodes = NULL, order.by = NULL){
   dots <- list(...)
@@ -16,8 +23,8 @@ xtsdfn <- function(..., column.smodes = NULL, order.by = NULL){
   x <- list()
   x$index <- order.by
 
-  ## if column.smodes is not provided, we just cbind all xts objects and
-  ## recycle column.smodes as vector of blocks for each smode (of length ncol(x[[smode]])
+  ## if column.classes is not provided, we just cbind all xts objects and
+  ## recycle column.classes as a vector of blocks for each class (of length ncol(x[[class]])
   if (!is.null(column.smodes)) {
     smodes <- unique(column.smodes)
     recycle.columns <- FALSE
@@ -72,21 +79,21 @@ as.xtsdfn.data.frame <- function(df, order.by = "rownames", ...) {
       order.by <- rownames(df)
     order.by <- as.POSIXct(order.by, ...)
   }
-  column.smodes <- vector("numeric", ncol(df))
-
-  df.column.smodes <- sapply(df, storage.mode)
-  smodes <- unique(df.column.smodes)
 
   x <- list()
   x$index <- order.by
-  x$smodes <- smodes
+  x$column.smodes <- sapply(df, storage.mode)
+  x$smodes <- unique(x$column.smodes)
+  x$column.classes <- lapply(df, class)
 
-  for (smode in smodes) {
-    x[[smode]] <- as.xts(df[, df.column.smodes == smode, drop = FALSE], order.by = order.by)
-    column.smodes[df.column.smodes == smode] <- smode
+  for (smode in x$smodes) {
+    sub.df <- df[, x$column.smodes == smode, drop = FALSE]
+    ## preprocessing for types such as POSIXct or Date
+    ## TODO: factors need special handling
+    sub.matrix <- sapply(sub.df, as.vector)
+    x[[smode]] <- as.xts(sub.matrix, order.by = order.by)
   }
 
-  x$column.smodes <- column.smodes
   class(x) <- "xtsdfn"
 
   make.unique.colnames(x)
@@ -143,7 +150,7 @@ as.data.frame.xtsdfn <- function(x, row.names = NULL, ...) {
   if (is.null(row.names))
     row.names <- index(x)
   index.aux <- get.aux.index(x)
-  xts.list <- lapply(1:length(x$column.smodes), function(i) x[[x$column.smodes[i]]][, index.aux[i]])
+  xts.list <- lapply(seq(ncol(x)), function(i) x[[x$column.smodes[i]]][, index.aux[i]])
   do.call(data.frame, append(xts.list, list(row.names = row.names, stringsAsFactors = FALSE, ...)))
 }
 

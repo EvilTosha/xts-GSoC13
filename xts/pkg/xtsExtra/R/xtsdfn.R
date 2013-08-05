@@ -18,12 +18,14 @@ xtsdfn <- function(..., column.smodes = NULL, column.classes = NULL, order.by = 
   x$index <- order.by
 
   if (is.null(column.classes)) {
+    column.classes <- list()
     for (obj in dots) {
       ## TODO: use better way to determine a class of an xts object
-      class <- class(obj[1, 1])
-      column.classes <- c(column.classes, rep(class, ncol(obj)))
+      class <- class(coredata(obj[1, 1, drop = TRUE]))
+      column.classes <- append(column.classes, rep(list(class), ncol(obj)))
     }
   }
+  if (!is.list(column.classes)) column.classes <- as.list(column.classes)
   x$column.classes <- column.classes
 
   smodes <- unique(sapply(dots, storage.mode))

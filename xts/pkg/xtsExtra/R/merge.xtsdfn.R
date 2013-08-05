@@ -1,6 +1,8 @@
 cbind.xtsdfn <- function(..., deparse.level = 1) {
   dots <- list(...)
   column.smodes <- do.call(append, lapply(dots, function(x) x$column.smodes))
+  column.classes <- do.call(append, lapply(dots, function(x) x$column.classes))
+  class.info <- do.call(append, lapply(dots, function(x) x$class.info))
 
   smode.xts <- list()
   for (obj in dots) {
@@ -12,7 +14,9 @@ cbind.xtsdfn <- function(..., deparse.level = 1) {
     }
   }
 
-  do.call(xtsdfn, append(smode.xts, list(column.smodes = column.smodes)))
+  do.call(xtsdfn, append(smode.xts, list(column.smodes = column.smodes,
+                                         column.classes = column.classes,
+                                         class.info = class.info)))
 }
 
 
@@ -31,7 +35,9 @@ rbind.xtsdfn <- function(..., deparse.level = 1) {
       for (smode in ref.obj$smodes)
         smode.xts[[smode]] <- rbind(smode.xts[[smode]], obj[[smode]])
     }
-    do.call(xtsdfn, append(smode.xts, list(column.smodes = ref.obj$column.smodes)))
+    do.call(xtsdfn, append(smode.xts, list(column.smodes = ref.obj$column.smodes,
+                                           column.classes = ref.obj$column.smodes,
+                                           class.info = ref.obj$class.info)))
   }
 }
 
@@ -53,6 +59,9 @@ merge.xtsdfn <- function(..., all = TRUE, fill = NA) {
   index.xts <- xts(order.by = index)
 
   column.smodes <- do.call(append, lapply(dots, function(x) x$column.smodes))
+  column.classes <- do.call(append, lapply(dots, function(x) x$column.classes))
+  class.info <- do.call(append, lapply(dots, function(x) x$class.info))
+
   smode.xts <- list()
   for (obj in dots) {
     for (smode in obj$smodes) {
@@ -66,5 +75,7 @@ merge.xtsdfn <- function(..., all = TRUE, fill = NA) {
     }
   }
 
-  do.call(xtsdfn, append(smode.xts, list(column.smodes = column.smodes)))
+  do.call(xtsdfn, append(smode.xts, list(column.smodes = column.smodes,
+                                         column.classes = column.classes,
+                                         class.info = class.info)))
 }

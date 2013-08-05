@@ -7,7 +7,7 @@
 
 ## constructor only accepts xts objects as input
 ## WARNING: currently this constructor doesn't properly handle multiple xts objects with same smode
-xtsdfn <- function(..., column.classes = NULL, order.by = NULL){
+xtsdfn <- function(..., column.smodes = NULL, column.classes = NULL, order.by = NULL, class.info = NULL){
   dots <- list(...)
   if (!all(sapply(dots, is.xts)))
     stop("All provided objects need to be an xts objects")
@@ -29,7 +29,11 @@ xtsdfn <- function(..., column.classes = NULL, order.by = NULL){
   smodes <- unique(sapply(dots, storage.mode))
   x$smodes <- smodes
 
-  column.smodes <- c()
+  recycle.column.smodes <- FALSE
+  if (is.null(column.smodes)) {
+    column.smodes <- c()
+    recycle.column.smodes <- TRUE
+  }
 
   for (smode in smodes) {
     columns <- dots[smode == smodes]
@@ -39,12 +43,15 @@ xtsdfn <- function(..., column.classes = NULL, order.by = NULL){
       x[[smode]] <- columns[[1]]
     else
       x[[smode]] <- do.call(cbind, columns)
-    column.smodes <- c(column.smodes, rep(smode, ncol(x[[smode]])))
+    if (recycle.column.smodes)
+      column.smodes <- c(column.smodes, rep(smode, ncol(x[[smode]])))
   }
   x$column.smodes <- column.smodes
+  x$class.info <- class.info
   class(x) <- "xtsdfn"
 
-  make.unique.colnames(x)
+  ## make.unique.colnames(x)
+  x
 }
 
 is.xtsdfn <- function(x) inherits(x, "xtsdfn")
@@ -88,7 +95,7 @@ as.xtsdfn.data.frame <- function(df, order.by = "rownames", ...) {
     sub.matrix <- sapply(sub.df,
                          function(col) {
                            if ("factor" %in% class(col))
-                             as.numeric(col)
+                             as.integer(col)
                            else
                              as.vector(col)
                            })
@@ -218,8 +225,10 @@ print.xtsdfn <- function(x, ...) {
     else
       index <- index(x[[smode]])
   }
-  print(smode.xts)
-  do.call(xtsdfn, append(smode.xts, list(order.by = index, column.smodes = x$column.smodes[j])))
+  do.call(xtsdfn, append(smode.xts, list(order.by = index,
+                                         column.smodes = x$column.smodes[j],
+                                         column.classes = x$column.classes[j],
+                                         class.info = x$class.info[j])))
 }
 
 `[<-.xtsdfn` <- function(x, i, j, value) {

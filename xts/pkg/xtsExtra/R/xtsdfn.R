@@ -5,15 +5,9 @@
 ## 4) Parameter x$column.smodes contains vector of smodes, which length is sum of lengths of all xts objects.
 ##    i'th element in x$column.smodes represents storage mode of i'th column
 
-xts.restore.class <- function(x) {
-  if (any(sapply(class(x), function (class) class %in% c("logical", "numeric", "character"))))
-    NA
-  else
-    class(x)
-}
-
 ## constructor only accepts xts objects as input
-xtsdfn <- function(..., column.smodes = NULL, order.by = NULL){
+## WARNING: currently this constructor doesn't properly handle multiple xts objects with same smode
+xtsdfn <- function(..., column.classes = NULL, order.by = NULL){
   dots <- list(...)
   if (!all(sapply(dots, is.xts)))
     stop("All provided objects need to be an xts objects")
@@ -23,17 +17,19 @@ xtsdfn <- function(..., column.smodes = NULL, order.by = NULL){
   x <- list()
   x$index <- order.by
 
-  ## if column.classes is not provided, we just cbind all xts objects and
-  ## recycle column.classes as a vector of blocks for each class (of length ncol(x[[class]])
-  if (!is.null(column.smodes)) {
-    smodes <- unique(column.smodes)
-    recycle.columns <- FALSE
+  if (is.null(column.classes)) {
+    for (obj in dots) {
+      ## TODO: use better way to determine a class of an xts object
+      class <- class(obj[1, 1])
+      column.classes <- c(column.classes, rep(class, ncol(obj)))
+    }
   }
-  else {
-    smodes <- unique(sapply(dots, storage.mode))
-    recycle.columns <- TRUE
-  }
+  x$column.classes <- column.classes
+
+  smodes <- unique(sapply(dots, storage.mode))
   x$smodes <- smodes
+
+  column.smodes <- c()
 
   for (smode in smodes) {
     columns <- dots[smode == smodes]
@@ -43,8 +39,7 @@ xtsdfn <- function(..., column.smodes = NULL, order.by = NULL){
       x[[smode]] <- columns[[1]]
     else
       x[[smode]] <- do.call(cbind, columns)
-    if (recycle.columns)
-      column.smodes <- c(column.smodes, rep(smode, ncol(x[[smode]])))
+    column.smodes <- c(column.smodes, rep(smode, ncol(x[[smode]])))
   }
   x$column.smodes <- column.smodes
   class(x) <- "xtsdfn"
@@ -90,8 +85,20 @@ as.xtsdfn.data.frame <- function(df, order.by = "rownames", ...) {
     sub.df <- df[, x$column.smodes == smode, drop = FALSE]
     ## preprocessing for types such as POSIXct or Date
     ## TODO: factors need special handling
-    sub.matrix <- sapply(sub.df, as.vector)
+    sub.matrix <- sapply(sub.df,
+                         function(col) {
+                           if ("factor" %in% class(col))
+                             as.numeric(col)
+                           else
+                             as.vector(col)
+                           })
     x[[smode]] <- as.xts(sub.matrix, order.by = order.by)
+  }
+
+  x$class.info <- list()
+  for (i in seq_len(ncol(df))) {
+    if ("factor" %in% x$column.classes[[i]])
+      x$class.info[[i]] <- levels(df[, i])
   }
 
   class(x) <- "xtsdfn"
@@ -124,6 +131,16 @@ dimnames.xtsdfn <- function(x) {
   }
 }
 
+head.xtsdfn <- function(x, n = 6, ...) {
+  stopifnot(length(n) == 1L)
+	xlen <- nrow(x)
+  n <- if (n < 0L)
+    max(xlen + n, 0L)
+  else min(n, xlen)
+
+	x[seq_len(n),, drop = FALSE]
+}
+
 
 as.xts.xtsdfn <- function(x) {
   if (length(x$column.smodes) == 0)
@@ -149,7 +166,7 @@ as.xts.xtsdfn <- function(x) {
 intersects <- function(a, b) length(intersect(a, b)) > 0
 
 ## first version, needs improvements
-restore.column.class <- function(column, class) {
+restore.column.class <- function(column, class, class.info = NULL) {
   if (intersects(class, c("numeric", "logical", "character", "integer")))
     column
   else {
@@ -158,18 +175,21 @@ restore.column.class <- function(column, class) {
     else if (intersects(class, c("POSIXct")))
       ## is it the right way to restore POSIXct?
       .POSIXct(column)
-    ## TODO: add factor support
+    else if (intersects(class, c("factor")))
+      factor(as.numeric(column), labels = class.info)
   }
 }
 
 as.data.frame.xtsdfn <- function(x, row.names = NULL, ...) {
   if (is.null(row.names))
-    row.names <- as.character(index(x))
+    row.names <- make.unique(as.character(index(x)))
   index.aux <- get.aux.index(x)
+  ## TODO: deal with stringsAsFactors problem
   df <- cbind.data.frame(lapply(seq(ncol(x)),
                                 function(i)
                                 restore.column.class(x[[x$column.smodes[i]]][, index.aux[i], drop = TRUE],
-                                                     x$column.classes[[i]])))
+                                                     x$column.classes[[i]],
+                                                     x$class.info[[i]])))
   colnames(df) <- colnames(x)
   rownames(df) <- row.names
   df
@@ -198,6 +218,7 @@ print.xtsdfn <- function(x, ...) {
     else
       index <- index(x[[smode]])
   }
+  print(smode.xts)
   do.call(xtsdfn, append(smode.xts, list(order.by = index, column.smodes = x$column.smodes[j])))
 }
 

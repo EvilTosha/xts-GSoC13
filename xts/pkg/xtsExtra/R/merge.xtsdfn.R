@@ -36,7 +36,7 @@ rbind.xtsdfn <- function(..., deparse.level = 1) {
         smode.xts[[smode]] <- rbind(smode.xts[[smode]], obj[[smode]])
     }
     do.call(xtsdfn, append(smode.xts, list(column.smodes = ref.obj$column.smodes,
-                                           column.classes = ref.obj$column.smodes,
+                                           column.classes = ref.obj$column.classes,
                                            class.info = ref.obj$class.info)))
   }
 }

@@ -212,9 +212,9 @@ print.xtsdfn <- function(x, ...) {
   ## smode.xts - a list, which contains for each storage mode a corresponding xts object
   smode.xts <- list()
 
-  if (missing(j)) j      <- 1:ncol(x)
+  if (missing(j))      j <- seq_len(ncol(x))
   if (is.character(j)) j <- which(colnames(x) %in% j)
-  if (is.logical(j)) j   <- which(j)
+  if (is.logical(j))   j <- which(j)
 
   for (smode in x$smodes) {
     ## set of columns of current smode
@@ -234,9 +234,11 @@ print.xtsdfn <- function(x, ...) {
 }
 
 `[<-.xtsdfn` <- function(x, i, j, value) {
-  if (missing(j)) j      <- 1:ncol(x)
+  if (missing(j))      j <- seq_len(ncol(x))
   if (is.character(j)) j <- which(colnames(x) %in% j)
-  if (is.logical(j)) j   <- which(j)
+  if (is.logical(j))   j <- which(j)
+
+  if (missing(i)) i <- seq_len(nrow(x))
 
   ## TODO: this won't work with vector to column assignment
   if (is.atomic(value) || is.vector(value) || is.list(value))

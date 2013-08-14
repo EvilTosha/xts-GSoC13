@@ -6,7 +6,7 @@
 ##    i'th element in x$column.smodes represents storage mode of i'th column
 
 ## constructor only accepts xts objects as input
-## WARNING: currently this constructor doesn't properly handle multiple xts objects with same smode
+## this is the constructor for internal usage, not public
 xtsdfn <- function(..., column.smodes = NULL, column.classes = NULL, order.by = NULL, class.info = NULL){
   dots <- list(...)
   if (!all(sapply(dots, is.xts)))
@@ -185,7 +185,8 @@ restore.column.class <- function(column, class, class.info = NULL) {
       ## is it the right way to restore POSIXct?
       .POSIXct(column)
     else if (intersects(class, c("factor")))
-      factor(as.numeric(column), labels = class.info)
+      ## TODO: this construction is ugly and slow: find a better way
+      factor(as.numeric(column), labels = class.info[unique(as.numeric(column))])
   }
 }
 

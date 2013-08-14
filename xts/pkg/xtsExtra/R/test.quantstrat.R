@@ -1,4 +1,26 @@
-require(xts)
+## loading of order book example
+
+load(url("http://braverock.com/brian/order_book.rda"))
+#loads an order_book character mode xts object
+
+## such conversion produces non-unique indexes
+order.book.df <- as.data.frame(order_book, stringsAsFactors = FALSE)
+
+order.book.df$Order.Qty        <- as.factor(order.book.df$Order.Qty)
+order.book.df$Order.Price      <- as.double(order.book.df$Order.Price)
+order.book.df$Order.Type       <- as.factor(order.book.df$Order.Type)
+order.book.df$Order.Side       <- as.factor(order.book.df$Order.Side)
+order.book.df$Order.Threshold  <- as.double(order.book.df$Order.Threshold)
+order.book.df$Order.Status     <- as.factor(order.book.df$Order.Status)
+## this operation drops times, but for demonstration purposes it's okay
+order.book.df$Order.StatusTime <- as.POSIXct(order.book.df$Order.StatusTime)
+order.book.df$Prefer           <- as.factor(order.book.df$Prefer)
+order.book.df$Order.Set        <- as.character(order.book.df$Order.Set)
+order.book.df$Txn.Fees         <- as.factor(order.book.df$Txn.Fees)
+order.book.df$Rule             <- as.character(order.book.df$Rule)
+
+
+order.book.xtsdfn <- as.xtsdfn(order.book.df)
 
 ## tests with one class matrix just to ensure correctness and back-compatibility
 data(sample_matrix)

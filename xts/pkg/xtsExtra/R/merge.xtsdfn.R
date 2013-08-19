@@ -24,20 +24,33 @@ rbind.xtsdfn <- function(..., deparse.level = 1) {
   ## only works with perfectly matching (in rbind sense) objects
   dots <- list(...)
 
+  ref.obj <- dots[[1]]
+  ## rough check, should be soften in future
+  for (i in seq_along(ref.obj$column.classes)) {
+    for (obj in dots[-1]) {
+      if (length(obj$column.classes) < i || obj$column.classes[[i]] != ref.obj$column.classes[[i]])
+        stop("Not matching column classes")
+    }
+  }
+
   if (length(dots) == 0)
     NULL
   else {
     smode.xts <- list()
-    ref.obj <- dots[[1]]
     for (smode in ref.obj$smodes)
       smode.xts[[smode]] <- ref.obj[[smode]]
+    class.info <- ref.obj$class.info
     for (obj in dots[-1]) {
       for (smode in ref.obj$smodes)
         smode.xts[[smode]] <- rbind(smode.xts[[smode]], obj[[smode]])
+      for (i in seq_along(class.info)) {
+        if (intersects(ref.obj$column.classes[[i]], c("factor")))
+          class.info[[i]] <- union(class.info[[i]], obj$class.info[[i]])
+      }
     }
     do.call(xtsdfn, append(smode.xts, list(column.smodes = ref.obj$column.smodes,
                                            column.classes = ref.obj$column.classes,
-                                           class.info = ref.obj$class.info)))
+                                           class.info = class.info)))
   }
 }
 

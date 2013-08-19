@@ -224,13 +224,16 @@ print.xtsdfn <- function(x, ...) {
   for (smode in x$smodes) {
     ## set of columns of current smode
     smode.columns <- which(x$column.smodes == smode)
-    sub.xts <- x[[smode]][i, which(smode.columns %in% j)]
-    if (length(sub.xts) > 0)
-      smode.xts[[smode]] <- sub.xts
-    if (!missing(i))
-      index <- index(x[[smode]])[x[[smode]][i, , which.i = TRUE]]
-    else
-      index <- index(x[[smode]])
+    sub.j <- which(smode.columns %in% j)
+    if (length(sub.j) > 0) {
+      sub.xts <- x[[smode]][i, sub.j]
+      if (length(sub.xts) > 0)
+        smode.xts[[smode]] <- sub.xts
+      if (!missing(i))
+        index <- index(x[[smode]])[x[[smode]][i, , which.i = TRUE]]
+      else
+        index <- index(x[[smode]])
+    }
   }
   do.call(xtsdfn, append(smode.xts, list(order.by = index,
                                          column.smodes = x$column.smodes[j],

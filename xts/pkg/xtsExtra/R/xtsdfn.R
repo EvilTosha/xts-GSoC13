@@ -115,6 +115,10 @@ as.xtsdfn.data.frame <- function(df, order.by = "rownames", ...) {
   make.unique.colnames(x)
 }
 
+as.xtsdfn.matrix <- function(x, ...) {
+  as.xtsdfn.data.frame(as.data.frame(x), ... = ...)
+}
+
 as.xtsdfn.xts <- function(x, ...) xtsdfn(x, ...)
 
 index.xtsdfn <- function(x) x$index

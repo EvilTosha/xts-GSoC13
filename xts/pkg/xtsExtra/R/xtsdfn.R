@@ -121,9 +121,20 @@ as.xtsdfn.matrix <- function(x, ...) {
 
 as.xtsdfn.xts <- function(x, ...) xtsdfn(x, ...)
 
+as.xtsdfn.xtsdfn <- function(x, ...) x
+
 index.xtsdfn <- function(x) x$index
 
 dim.xtsdfn <- function(x) c(length(index(x)), length(x$column.smodes))
+
+coredata.xtsdfn <- function(x, ...) as.data.frame(x)
+
+lag.xtsdfn <- function(x, k = 1, na.pad = TRUE, ...) {
+  ans <- x
+  for (smode in x$smodes)
+    ans[[smode]] <- lag(ans[[smode]], k, na.pad, ...)
+  ans
+}
 
 ## xts can't have same name for different columns, so xtsdfn should replicate this behavior
 make.unique.colnames <- function(x) {

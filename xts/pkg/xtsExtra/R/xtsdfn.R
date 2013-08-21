@@ -154,6 +154,16 @@ head.xtsdfn <- function(x, n = 6, ...) {
 	x[seq_len(n),, drop = FALSE]
 }
 
+tail.xtsdfn <- function(x, n = 6, ...) {
+  stopifnot(length(n) == 1L)
+	xlen <- nrow(x)
+  n <- if (n < 0L)
+    max(xlen + n, 0L)
+  else min(n, xlen)
+
+	x[seq.int(to = xlen, length.out = n),, drop = FALSE]
+}
+
 
 as.xts.xtsdfn <- function(x) {
   if (length(x$column.smodes) == 0)

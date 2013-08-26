@@ -229,16 +229,16 @@ restore.column.class <- function(column, class, class.info = NULL) {
   }
 }
 
-as.data.frame.xtsdfn <- function(x, row.names = NULL, ...) {
+as.data.frame.xtsdfn <- function(x, row.names = NULL, stringsAsFactors = FALSE, ...) {
   if (is.null(row.names))
     row.names <- make.unique(as.character(index(x)))
   index.aux <- get.aux.index(x)
-  ## TODO: deal with stringsAsFactors problem
   df <- cbind.data.frame(lapply(seq(ncol(x)),
                                 function(i)
-                                restore.column.class(x[[x$column.smodes[i]]][, index.aux[i], drop = TRUE],
-                                                     x$column.classes[[i]],
-                                                     x$class.info[[i]])))
+                                data.frame(restore.column.class(x[[x$column.smodes[i]]][, index.aux[i], drop = TRUE],
+                                                                x$column.classes[[i]],
+                                                                x$class.info[[i]]),
+                                           stringsAsFactors = stringsAsFactors)))
   colnames(df) <- colnames(x)
   rownames(df) <- row.names
   df

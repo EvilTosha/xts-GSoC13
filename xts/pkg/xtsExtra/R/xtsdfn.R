@@ -182,19 +182,33 @@ as.xts.xtsdfn <- function(x) {
   ## if there is only one smode available - simply return corresponding xts
   else if (length(x$smodes) == 1)
     x[[x$smodes[1]]]
-  ## else convert all to character xts
+  ## else, if there exist column of non-standard smode, convert all to character xts
   else {
+    top.smode <- "logical"
+    if (!all(x$smodes %in% c("logical", "integer", "double", "complex")))
+      top.smode <- "character"
+    else if (any(x$smodes %in% "complex"))
+      top.smode <- "complex"
+    else if (any(x$smodes %in% "double"))
+      top.smode <- "double"
+    else if (any(x$smodes %in% "integer"))
+      top.smode <- "integer"
+
     index.aux <- get.aux.index(x)
     ## TODO: find a way without converting each column to character explicitly
     res <- x[[x$column.smodes[1]]][, index.aux[1]]
-    storage.mode(res) <- "character"
+    storage.mode(res) <- top.smode
     for (i in 2:ncol(x)) {
       col <- x[[x$column.smodes[i]]][, index.aux[i]]
-      storage.mode(col) <- "character"
+      storage.mode(col) <- top.smode
       res <- cbind(res, col)
     }
     res
   }
+}
+
+as.matrix.xtsdfn <- function(x) {
+  as.matrix(as.xts(x))
 }
 
 intersects <- function(a, b) length(intersect(a, b)) > 0

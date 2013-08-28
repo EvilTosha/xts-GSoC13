@@ -37,3 +37,11 @@ cummax.xtsdfn <- function(x) {
                                          column.classes = x$column.classes,
                                          class.info = x$class.info)))
 }
+
+
+mean.xtsdfn <- function(x) {
+  means <- NULL
+  for (smode in x$smodes)
+    means <- c(means, mean(x[[smode]]))
+  mean(means)
+}

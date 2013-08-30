@@ -134,21 +134,3 @@ print(identical(df2, as.data.frame(xtsdfn.obj)))
 xtsdfn.obj[4, "character"] <- "forty"
 df2[4, "character"] <- "forty"
 print(identical(df2, as.data.frame(xtsdfn.obj)))
-
-## quantstrat order book tests
-demo("bbands", package="quantstrat")
-order.book.xts <- getOrderBook("bbands")$bbands$IBM
-
-## constructor parameters may change during development
-order.book.xtsdfn <- as.xtsdfn(order.book.xts, column.classes = c("numeric", "numeric", "factor", "factor", "numeric", "factor", "POSIXct", "factor", "character", "factor", "character"))
-
-## adding new order
-new.order.time <- Sys.Date()
-new.order <- xtsdfn(t(c(100, 96.3, "market", "long", NA, "closed", as.POSIXct("2008-01-01"), "", NA, 0, "ruleSignal.rule")),
-                    order.by = new.order.time,
-                    dimnames=list(NULL, c("Order.Qty", "Order.Price", "Order.Type",
-                      "Order.Side", "Order.Threshold", "Order.Status", "Order.StatusTime",
-                      "Prefer", "Order.Set", "Txn.Fees", "Rule")))
-
-order.book.xtsdfn <- rbind(order.book.xtsdfn, new.order)
-print(identical(order.book.xtsdfn[Sys.Date, ], new.order))

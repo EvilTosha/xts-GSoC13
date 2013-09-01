@@ -46,9 +46,9 @@ S3method(barplot, xts)
 
 
 ## Data frame capability
-#S3method(Ops, xtsdf)
-#S3method(Summary, xtsdf)
-#S3method(Math, xtsdf)
+S3method(Ops, xtsdf)
+S3method(Summary, xtsdf)
+S3method(Math, xtsdf)
 
 export("xtsdf")
 export("as.xtsdf")
@@ -94,3 +94,34 @@ S3method(coredata, xtsdf)
 #export("indexClass")
 #S3method(indexClass, xts)
 #S3method(indexClass, xtsdf)
+
+
+#### xtsdfn methods
+
+export("as.xtsdfn")
+
+S3method(as.xtsdfn, data.frame)
+S3method(as.xtsdfn, matrix)
+S3method(as.xtsdfn, xtsdfn)
+S3method(as.xtsdfn, xts)
+
+S3method(as.data.frame, xtsdfn)
+S3method(as.xts, xtsdfn)
+S3method(as.matrix, xtsdfn)
+
+S3method(`[`,xtsdfn)
+S3method(`[<-`, xtsdfn)
+S3method(print, xtsdfn)
+
+S3method(cbind, xtsdfn)
+S3method(rbind, xtsdfn)
+S3method(merge, xtsdfn)
+
+export("is.xtsdf")
+S3method(index, xtsdfn)
+
+S3method(dim, xtsdfn)
+S3method(dimnames, xtsdfn)
+S3method(lag, xtsdfn)
+S3method(head, xtsdfn)
+S3method(tail, xtsdfn)

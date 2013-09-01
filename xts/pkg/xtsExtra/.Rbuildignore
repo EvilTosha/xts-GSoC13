@@ -6,10 +6,7 @@ R/bind\.merge\.R
 R/graphics
 R/groupGenerics\.R
 R/old\.plot\.R
-R/simpleS3.xtsdf\.R
-R/subset\.print\.xtsdf\.R
 R/xtsdf
-R/xtsdf\.R
 
 man/HoltWinters\.xts\.Rd
 man/StructTS\.xts\.Rd

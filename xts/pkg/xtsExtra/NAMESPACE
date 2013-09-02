@@ -117,6 +117,12 @@ S3method(cbind, xtsdfn)
 S3method(rbind, xtsdfn)
 S3method(merge, xtsdfn)
 
+S3method(cumsum, xtsdfn)
+S3method(cumprod, xtsdfn)
+S3method(cummin, xtsdfn)
+S3method(cummax, xtsdfn)
+S3method(mean, xtsdfn)
+
 export("is.xtsdf")
 S3method(index, xtsdfn)
 
@@ -125,3 +131,4 @@ S3method(dimnames, xtsdfn)
 S3method(lag, xtsdfn)
 S3method(head, xtsdfn)
 S3method(tail, xtsdfn)
+S3method(coredata, xtsdfn)

@@ -39,9 +39,9 @@ cummax.xtsdfn <- function(x) {
 }
 
 
-mean.xtsdfn <- function(x) {
+mean.xtsdfn <- function(x, ...) {
   means <- NULL
   for (smode in x$smodes)
-    means <- c(means, mean(x[[smode]]))
-  mean(means)
+    means <- c(means, mean(x[[smode]], ... = ...))
+  mean(means, ... = ...)
 }

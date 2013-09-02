@@ -123,7 +123,7 @@ as.xtsdfn.xts <- function(x, ...) xtsdfn(x, ...)
 
 as.xtsdfn.xtsdfn <- function(x, ...) x
 
-index.xtsdfn <- function(x) x$index
+index.xtsdfn <- function(x, ...) x$index
 
 dim.xtsdfn <- function(x) c(length(index(x)), length(x$column.smodes))
 
@@ -176,7 +176,7 @@ tail.xtsdfn <- function(x, n = 6, ...) {
 }
 
 
-as.xts.xtsdfn <- function(x) {
+as.xts.xtsdfn <- function(x, ...) {
   if (length(x$column.smodes) == 0)
     xts(NULL)
   ## if there is only one smode available - simply return corresponding xts
@@ -207,8 +207,8 @@ as.xts.xtsdfn <- function(x) {
   }
 }
 
-as.matrix.xtsdfn <- function(x) {
-  as.matrix(as.xts(x))
+as.matrix.xtsdfn <- function(x, ...) {
+  as.matrix(as.xts(x), ... = ...)
 }
 
 intersects <- function(a, b) length(intersect(a, b)) > 0

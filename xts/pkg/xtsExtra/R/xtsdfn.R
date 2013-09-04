@@ -262,14 +262,18 @@ print.xtsdfn <- function(x, ...) {
     sub.j <- which(smode.columns %in% j)
     if (length(sub.j) > 0) {
       sub.xts <- x[[smode]][i, sub.j]
-      if (length(sub.xts) > 0)
-        smode.xts[[smode]] <- sub.xts
+      smode.xts[[smode]] <- sub.xts
       if (!missing(i))
         index <- index(x[[smode]])[x[[smode]][i, , which.i = TRUE]]
       else
         index <- index(x[[smode]])
     }
   }
+ ## remove empty parts if the object is not empty
+  if (any(sapply(smode.xts, length)) > 0) {
+    smode.xts <- smode.xts[sapply(smode.xts, length) > 0]
+  }
+
   do.call(xtsdfn, append(smode.xts, list(order.by = index,
                                          column.smodes = x$column.smodes[j],
                                          column.classes = x$column.classes[j],

@@ -77,21 +77,21 @@ get.aux.index <- function(x) {
 
 as.xtsdfn <- function(x, ...) UseMethod("as.xtsdfn")
 
-as.xtsdfn.data.frame <- function(df, order.by = "rownames", ...) {
+as.xtsdfn.data.frame <- function(x, order.by = "rownames", ...) {
   if (!is.timeBased(order.by)) {
     if(order.by == "rownames")
-      order.by <- rownames(df)
+      order.by <- rownames(x)
     order.by <- as.POSIXct(order.by, ...)
   }
 
-  x <- list()
-  x$index <- order.by
-  x$column.smodes <- sapply(df, storage.mode)
-  x$smodes <- unique(x$column.smodes)
-  x$column.classes <- lapply(df, class)
+  res <- list()
+  res$index <- order.by
+  res$column.smodes <- sapply(x, storage.mode)
+  res$smodes <- unique(res$column.smodes)
+  res$column.classes <- lapply(x, class)
 
-  for (smode in x$smodes) {
-    sub.df <- df[, x$column.smodes == smode, drop = FALSE]
+  for (smode in res$smodes) {
+    sub.df <- x[, res$column.smodes == smode, drop = FALSE]
     ## preprocessing for types such as POSIXct or Date
     ## TODO: factors need special handling
     sub.matrix <- sapply(sub.df,
@@ -101,18 +101,18 @@ as.xtsdfn.data.frame <- function(df, order.by = "rownames", ...) {
                            else
                              as.vector(col)
                            })
-    x[[smode]] <- as.xts(sub.matrix, order.by = order.by)
+    res[[smode]] <- as.xts(sub.matrix, order.by = order.by)
   }
 
-  x$class.info <- list()
-  for (i in seq_len(ncol(df))) {
-    if ("factor" %in% x$column.classes[[i]])
-      x$class.info[[i]] <- levels(df[, i])
+  res$class.info <- list()
+  for (i in seq_len(ncol(x))) {
+    if ("factor" %in% res$column.classes[[i]])
+      res$class.info[[i]] <- levels(x[, i])
   }
 
-  class(x) <- "xtsdfn"
+  class(res) <- "xtsdfn"
 
-  make.unique.colnames(x)
+  make.unique.colnames(res)
 }
 
 as.xtsdfn.matrix <- function(x, ...) {
@@ -229,7 +229,7 @@ restore.column.class <- function(column, class, class.info = NULL) {
   }
 }
 
-as.data.frame.xtsdfn <- function(x, row.names = NULL, stringsAsFactors = FALSE, ...) {
+as.data.frame.xtsdfn <- function(x, row.names = NULL, optional = FALSE, stringsAsFactors = FALSE, ...) {
   if (is.null(row.names))
     row.names <- make.unique(as.character(index(x)))
   index.aux <- get.aux.index(x)

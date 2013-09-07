@@ -11,7 +11,7 @@ Description: Supplementary functionality that can be used with the
 Depends: zoo, xts
 License: GPL-2
 URL: http://r-forge.r-project.org/projects/xts/
-Collate: 'xtsdfn.R' 'merge.xtsdfn.R' 'Math.xtsdfn.R'
+Collate: 'xtsdfn.R' 'subset.xtsdfn.R' 'merge.xtsdfn.R' 'Math.xtsdfn.R'
          'xtsdf.R' 'StructTS.R' 'acf.R' 'arima.R' 'barplot.R' 'bind.merge.R'
          'groupGenerics.R' 'old.plot.R' 'plot.R' 'simpleS3.xtsdf.R'
          'subset.print.xtsdf.R' 'zzz.R'

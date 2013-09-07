@@ -213,7 +213,7 @@ as.matrix.xtsdfn <- function(x, ...) {
 
 intersects <- function(a, b) length(intersect(a, b)) > 0
 
-## first version, needs improvements
+## TODO: first version, needs improvements
 restore.column.class <- function(column, class, class.info = NULL) {
   if (intersects(class, c("numeric", "logical", "character", "integer")))
     column
@@ -244,59 +244,19 @@ as.data.frame.xtsdfn <- function(x, row.names = NULL, optional = FALSE, stringsA
   df
 }
 
+
+## returns list of xts objects: one for each column
+as.list.xtsdfn <- function(x, ...) {
+  res <- list()
+  index.aux <- get.aux.index(x)
+  for (i in seq(ncol(x))) {
+    ## FIXME: find better way of appending xts objects
+    res <- append(res, list(x[[x$column.smodes[i]]][, index.aux[i]]))
+  }
+  names(res) <- colnames(x)
+  res
+}
+
 print.xtsdfn <- function(x, ...) {
   print(as.data.frame(x))
-}
-
-`[.xtsdfn` <- function(x, i, j, drop = FALSE, which.i = FALSE, ...) {
-  ## smode.xts - a list, which contains for each storage mode a corresponding xts object
-  smode.xts <- list()
-
-  if (missing(j))      j <- seq_len(ncol(x))
-  if (is.character(j)) j <- which(colnames(x) %in% j)
-  if (is.logical(j))   j <- which(j)
-
-  for (smode in x$smodes) {
-    ## set of columns of current smode
-    smode.columns <- which(x$column.smodes == smode)
-    sub.j <- which(smode.columns %in% j)
-    if (length(sub.j) > 0) {
-      sub.xts <- x[[smode]][i, sub.j]
-      smode.xts[[smode]] <- sub.xts
-      if (!missing(i))
-        index <- index(x[[smode]])[x[[smode]][i, , which.i = TRUE]]
-      else
-        index <- index(x[[smode]])
-    }
-  }
- ## remove empty parts if the object is not empty
-  if (any(sapply(smode.xts, length)) > 0) {
-    smode.xts <- smode.xts[sapply(smode.xts, length) > 0]
-  }
-
-  do.call(xtsdfn, append(smode.xts, list(order.by = index,
-                                         column.smodes = x$column.smodes[j],
-                                         column.classes = x$column.classes[j],
-                                         class.info = x$class.info[j])))
-}
-
-`[<-.xtsdfn` <- function(x, i, j, value) {
-  if (missing(j))      j <- seq_len(ncol(x))
-  if (is.character(j)) j <- which(colnames(x) %in% j)
-  if (is.logical(j))   j <- which(j)
-
-  if (missing(i)) i <- seq_len(nrow(x))
-
-  ## TODO: this won't work with vector to column assignment
-  if (is.atomic(value) || is.vector(value) || is.list(value))
-    value <- as.data.frame(value, stringsAsFactors = FALSE)
-
-  for (smode in x$smodes) {
-    smode.columns <- which(x$column.smodes == smode)
-    smode.j <- which(smode.columns %in% j)
-    value.j <- which(j %in% smode.columns)
-    if (length(smode.j) > 0)
-      x[[smode]][i, smode.j] <- value[, value.j]
-  }
-  x
 }

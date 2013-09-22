@@ -14,11 +14,19 @@ cbind.xtsdfn <- function(..., deparse.level = 1) {
     }
   }
 
-  do.call(xtsdfn, append(smode.xts, list(column.smodes = column.smodes,
-                                         column.classes = column.classes,
-                                         class.info = class.info)))
+  do.call(.xtsdfn, append(smode.xts, list(column.smodes = column.smodes,
+                                          column.classes = column.classes,
+                                          class.info = class.info)))
 }
 
+## return integer vector, which maps names to corresponding indices in extended.names
+names.permutation <- function(names, extended.names) {
+  res <- c()
+  for (i in seq_along(names)) {
+    res[i] <- which(extended.names == names[i])
+  }
+  res
+}
 
 rbind.xtsdfn <- function(..., deparse.level = 1) {
   ## only works with perfectly matching (in rbind sense) objects
@@ -34,24 +42,48 @@ rbind.xtsdfn <- function(..., deparse.level = 1) {
   }
 
   if (length(dots) == 0)
-    NULL
-  else {
-    smode.xts <- list()
-    for (smode in ref.obj$smodes)
-      smode.xts[[smode]] <- ref.obj[[smode]]
-    class.info <- ref.obj$class.info
-    for (obj in dots[-1]) {
-      for (smode in ref.obj$smodes)
-        smode.xts[[smode]] <- rbind(smode.xts[[smode]], obj[[smode]])
-      for (i in seq_along(class.info)) {
-        if (intersects(ref.obj$column.classes[[i]], c("factor")))
-          class.info[[i]] <- union(class.info[[i]], obj$class.info[[i]])
+    return(NULL)
+
+  class.info <- vector("list", ncol(ref.obj))
+
+  ## aux index is the same for all the objects in dots
+  index.aux <- get.aux.index(ref.obj)
+
+  ## factor levels accumulation
+  for (obj in dots) {
+    for (i in seq_along(class.info)) {
+      if (intersects(ref.obj$column.classes[[i]], c("factor")))
+        class.info[[i]] <- union(class.info[[i]], obj$class.info[[i]])
+    }
+  }
+
+  ## update factor columns to match union of levels
+  for (dots.i in seq_along(dots)) {
+    for (i in seq_along(class.info)) {
+      if (intersects(ref.obj$column.classes[[i]], c("factor"))) {
+        perm <- names.permutation(dots[[dots.i]]$class.info[[i]], class.info[[i]])
+        dots[[dots.i]][[ref.obj$column.smodes[[i]]]][, index.aux[i]] <-
+          perm[dots[[dots.i]][[ref.obj$column.smodes[[i]]]][, index.aux[i]]]
       }
     }
-    do.call(xtsdfn, append(smode.xts, list(column.smodes = ref.obj$column.smodes,
-                                           column.classes = ref.obj$column.classes,
-                                           class.info = class.info)))
   }
+
+  ## ref object changed, update
+  ## FIXME: this is bad code, change in the future
+  ref.obj <- dots[[1]]
+
+  smode.xts <- list()
+  for (smode in ref.obj$smodes)
+    smode.xts[[smode]] <- ref.obj[[smode]]
+
+  for (obj in dots[-1])
+    for (smode in ref.obj$smodes) {
+      smode.xts[[smode]] <- rbind(smode.xts[[smode]], obj[[smode]])
+    }
+
+  do.call(.xtsdfn, append(smode.xts, list(column.smodes = ref.obj$column.smodes,
+                                          column.classes = ref.obj$column.classes,
+                                          class.info = class.info)))
 }
 
 merge.xtsdfn <- function(..., all = TRUE, fill = NA) {
@@ -88,7 +120,7 @@ merge.xtsdfn <- function(..., all = TRUE, fill = NA) {
     }
   }
 
-  do.call(xtsdfn, append(smode.xts, list(column.smodes = column.smodes,
-                                         column.classes = column.classes,
-                                         class.info = class.info)))
+  do.call(.xtsdfn, append(smode.xts, list(column.smodes = column.smodes,
+                                          column.classes = column.classes,
+                                          class.info = class.info)))
 }

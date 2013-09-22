@@ -7,7 +7,7 @@
 
 ## constructor only accepts xts objects as input
 ## this is the constructor for internal usage, not public
-xtsdfn <- function(..., column.smodes = NULL, column.classes = NULL, order.by = NULL, class.info = NULL){
+.xtsdfn <- function(..., column.smodes = NULL, column.classes = NULL, order.by = NULL, class.info = NULL){
   dots <- list(...)
   if (!all(sapply(dots, is.xts)))
     stop("All provided objects need to be an xts objects")
@@ -92,15 +92,14 @@ as.xtsdfn.data.frame <- function(x, order.by = "rownames", ...) {
 
   for (smode in res$smodes) {
     sub.df <- x[, res$column.smodes == smode, drop = FALSE]
-    ## preprocessing for types such as POSIXct or Date
-    ## TODO: factors need special handling
-    sub.matrix <- sapply(sub.df,
+    ## preprocessing for types such as POSIXct or factor
+    sub.matrix <- do.call(cbind, lapply(sub.df,
                          function(col) {
                            if ("factor" %in% class(col))
                              as.integer(col)
                            else
                              as.vector(col)
-                           })
+                         }))
     res[[smode]] <- as.xts(sub.matrix, order.by = order.by)
   }
 
@@ -119,7 +118,7 @@ as.xtsdfn.matrix <- function(x, ...) {
   as.xtsdfn.data.frame(as.data.frame(x), ... = ...)
 }
 
-as.xtsdfn.xts <- function(x, ...) xtsdfn(x, ...)
+as.xtsdfn.xts <- function(x, ...) .xtsdfn(x, ...)
 
 as.xtsdfn.xtsdfn <- function(x, ...) x
 
@@ -225,7 +224,7 @@ restore.column.class <- function(column, class, class.info = NULL) {
       .POSIXct(column)
     else if (intersects(class, c("factor")))
       ## TODO: this construction is ugly and slow: find a better way
-      factor(as.numeric(column), labels = class.info[unique(as.numeric(column))])
+      factor(as.numeric(column), labels = class.info[sort(unique(as.numeric(column)))])
   }
 }
 

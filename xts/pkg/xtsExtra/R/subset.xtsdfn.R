@@ -55,10 +55,10 @@
     return(res)
   }
 
-  do.call(xtsdfn, append(smode.xts, list(order.by = index,
-                                         column.smodes = x$column.smodes[j],
-                                         column.classes = x$column.classes[j],
-                                         class.info = x$class.info[j])))
+  do.call(.xtsdfn, append(smode.xts, list(order.by = index,
+                                          column.smodes = x$column.smodes[j],
+                                          column.classes = x$column.classes[j],
+                                          class.info = x$class.info[j])))
 }
 
 `[<-.xtsdfn` <- function(x, i, j, value) {
